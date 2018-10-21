@@ -18,9 +18,34 @@ git 个人信息配置，用户名，密码，key等。
 
 ##### 一些经常使用的命令：
 
-`git status`   查看当前分支的状态
+`git status`   查看当前分支的状态，一般git 显示3个层次的文件状态：
 
-`git add filename  filename` 添加工作区指定文件修改到暂存区
+changes to be committed: 已经被add到暂存区的文件，下一步需要commit到本地仓库
+
+changes not staged for commit : 被add过的文件，又再次被修改，这些修改在工作区，还没有被add到暂存区
+
+untracked files: 尚未被add 过的文件，git 还没有对这些文件建立追踪
+
+```
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+        new file:   small.txt
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git checkout -- <file>..." to discard changes in working directory)
+
+        modified:   "git\344\275\277\347\224\250\347\254\224\350\256\260.md"
+        modified:   "\345\221\250\350\256\260.xlsx"
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+
+        big.txt
+```
+
+`git add filename  filename` 添加工作区指定文件修改到暂存区，并建立git对该文件的追踪。
 
 `git add .` 添加工作区所有的修改到暂存区
 
@@ -28,15 +53,36 @@ git 个人信息配置，用户名，密码，key等。
 
 `git commit --amend`   将暂存区的修改**追加提交**上一次也就是最新的commit，同时再次可以修改commit信息。或者理解为使用一个新的提交来覆盖上一次提交。
 
-`git stash`  将工作区和暂存区的修改保存到缓存区，使得当前的分支看起来是干净的。git reset --hard不会清理掉stash的缓存。
+`git stash`  将工作区和暂存区的修改保存到缓存区，使得当前的分支看起来是干净的。git reset --hard不会清理掉stash的缓存。stash有个副作用就是，add到暂存区的文件修改记录，在stash,stash pop之后会回退到工作区，后续需要再次add。
 
 `git stash pop/apply`  恢复上一次保存到缓存区的修改，使用pop表示在恢复的同时丢弃该缓存，apply恢复并且不丢弃该缓存。
+
+`git reset commit-id`  将当前分支的HEAD指针回退到指定的版本号commit-id, 同时重置暂存区，但工作区的文件修改还在。
+
+`git reset --soft commit-id`  将当前分支的HEAD指针回退到指定的版本号commit-id, 但暂存区和工作区的文件修改还在。
+
+`git reset --hard commit-id`  将当前分支的HEAD指针回退到指定的版本号commit-id, 并重置暂存区和工作区的修改记录。即当前工程和指定版本号commit-id的状态保持一致。
+
+即可以看出，reset对当前工程的修改程度是： --hard > 默认无参  >  --soft，
+
+即 （不保留暂存区、工作区） >  （保留工作区） > （保留暂存区、工作区）
+
+```
+commit-id 是下面看到的提交历史的最前面一串数字，相对于每次提交的版本号，是唯一的，用来标识提交历史。
+$ git reflog
+e251db6 (HEAD -> master, origin/master, origin/HEAD) HEAD@{0}: commit: 添加git使用笔记
+d7f3dba HEAD@{1}: commit: 添加周记和计划安排
+3729513 HEAD@{2}: commit: 添加剑指offer +15道
+618da42 HEAD@{3}: commit: 添加笔记
+```
 
 `git reset --soft head~n`  将本地仓库进行回退，回退最近的n次提交，只是回退本地仓库的提交，将已经提交到本地仓库修改撤回到暂存区，也就是commit之前的状态，并且工作区的修改也依然还在。
 
 `git reset --hard head~n` 将本地提交进行回退，回退最近的n次提交，和soft不同的是，会丢弃暂存区和工作区的修改，将整个工程彻底回退到最近n次提交前的一次提交的状态。
 
 `git reset  HEAD <file-name>`  to unstage， 撤销暂存区的提交记录，将暂存区修改放回到工作区，可以认为是add的反向操作。
+
+`git revert commit-id`  新建一次提交，用来撤销或者抵销之前commit-id的提交，reset是直接撤销之前的提交记录，revert则是通过生成新的提交来撤销之前的提交。
 
 `git checkout  [file-name]`  丢弃工作区的修改，也就是没有add到暂存区的本地文件修改被清除。
 
@@ -58,7 +104,7 @@ git 个人信息配置，用户名，密码，key等。
 
 `git log -n 10`  查看当前分支最近10次的提交记录
 
-`git reflog` 查看操作记录，比git log 查到更多的信息，比如已经被reset的commit id ，同样支持 -n 参数。`
+`git reflog` 查看所有的操作记录（包括commit和reset），比git log 查到更多的信息，log无法查看被删除的commit记录，但reflog则可以，同样支持 -n 参数。`
 
 `git cherry-pick  commit-id`， 一般是将其他分支提交id为： commit-id 的提交合并到当前的分支上，可能会有冲突，修改冲突即可。
 
@@ -71,6 +117,29 @@ git 个人信息配置，用户名，密码，key等。
 `git pull`  从远程库读取最新的修改，并合并到本地，如果本地仓库和远程仓库的修改保存一致(3个区一致)，则不会出现合并，而是fast forward, 不一致则会生成一次merge 的commit。
 
 `git push`  将本地仓库的commit 记录更新到远程仓库，前提是本地仓库除了待提交的commit，其他的commit和远程仓库要一致。
+
+`git rm <file-name>` 删除工作区的文件，同时将删除记录同步到暂存区。一般需要加 -f ，强制删除。 对add到暂存区的文件，直接使用git rm 会报错，需要添加 -f 参数。
+
+```
+Administrator@ASUS-20161206WK MINGW64 /g/GitHub/LearnNote (master)
+$ git add small.txt
+
+Administrator@ASUS-20161206WK MINGW64 /g/GitHub/LearnNote (master)
+$ git rm small.txt
+error: the following file has changes staged in the index:
+    small.txt
+(use --cached to keep the file, or -f to force removal)
+
+Administrator@ASUS-20161206WK MINGW64 /g/GitHub/LearnNote (master)
+$ git rm -f small.txt
+rm 'small.txt'
+```
+
+`git rm --cached <file-name>`  停止追踪文件，但文件会保留在工作区，相当于add的反向操作。
+
+`rm <file-name>`  删除工作区的文件，是原生Dos命令。
+
+
 
 
 

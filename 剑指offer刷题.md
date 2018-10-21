@@ -531,3 +531,122 @@ public class Solution {
 }
 ```
 
+
+
+#### 16 合并两个排序的链表 
+
+输入两个单调递增的链表，输出两个链表合成后的链表，当然我们需要合成后的链表满足单调不减规则。 
+
+思路：分别遍历并比较2个链表的节点，先在新链表中插入值小的节点，如果其中一个链表空了，就直接将另一个链表插入到新链表的结尾。可以使用递归和非递归2种算法。
+
+```
+// 递归版本
+public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+		if (list1 == null) { //list1已经遍历结束，没有节点了
+			return list2;
+		}
+		if (list2 == null) { //list2已经遍历结束，没有节点了
+			return list1;
+		}
+		
+		ListNode head;
+		if (list1.val < list2.val) {
+			head = list1;
+			head.next = Merge(list1.next, list2);
+		} else {
+			head = list2;
+			head.next = Merge(list1, list2.next);
+		}
+		
+		return head;
+	}
+}
+```
+
+```
+//递归版本
+public class Solution {
+    public ListNode Merge(ListNode list1,ListNode list2) {
+		if (list1 == null) { //list1为空，返回list2
+			return list2;
+		}
+		if (list2 == null) { 
+			return list1;
+		}
+		
+		ListNode head, cur;
+		
+		//确认头结点
+		if (list1.val < list2.val) {
+			head = list1;
+			list1 = list1.next;
+		} else {
+			head = list2;
+			list2 = list2.next;
+		}
+		
+		cur = head;
+		
+		//遍历2个链表
+		while (list1 != null && list2 != null) {
+			if (list1.val < list2.val) {
+				cur.next = list1;
+				cur = cur.next;
+				list1 = list1.next;
+			} else {
+				cur.next = list2;
+				cur = cur.next;
+				list2 = list2.next;
+			}
+		}
+		
+		//插入剩余非空的链表到新链表结尾
+		if (list1 == null) {
+			cur.next = list2;
+		} else if (list2 == null) {
+			cur.next = list1;
+		}
+		
+		return head;
+	}
+}
+```
+
+
+
+#### 17 树的子结构 
+
+输入两棵二叉树A，B，判断B是不是A的子结构。（ps：我们约定空树不是任意一个树的子结构） 
+
+思路：首先要有个API（isTree1HasTree2）来判断，tree1是否包含tree2，并且从各种的根节点开始比较，分别遍历其左右子节点，如果遇到不相等的节点，则返回false，如果tree2先遍历完了则说明tree1包含了tree2，返回true, tree1先遍历到空节点则返回false。
+
+之后对TreeA , 遍历各个节点，找到值和TreeB 根节点相等的节点，然后调用API进行判断。
+
+```
+public class Solution {
+    
+	static public boolean HasSubtree(TreeNode root1,TreeNode root2) {
+		boolean ret = false;
+		// 注意这里的判断算法，之前写错过。对当前节点、左子节点、右子节点 要依次进行判断，不能采用if else的逻辑关系
+		if (root1 != null && root2 != null) {
+			if (root1.val == root2.val) ret = isTree1HasTree2(root1, root2);
+			 
+			if (!ret) ret = HasSubtree(root1.left, root2);
+			if (!ret) ret = HasSubtree(root1.right, root2);
+		}
+		
+		return ret;
+	}
+	
+	static private boolean isTree1HasTree2(TreeNode tree1, TreeNode tree2) {
+		if (tree2 == null) return true;
+		if (tree1 == null) return false;
+		
+		if (tree1.val != tree2.val) return false;
+		return isTree1HasTree2(tree1.left, tree2.left)
+				&& isTree1HasTree2(tree1.right, tree2.right); 
+	}
+}
+```
+
