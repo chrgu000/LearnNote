@@ -1229,3 +1229,172 @@ public class Solution {
 }
 ```
 
+
+
+#### 27 字符串的排列 
+
+输入一个字符串,按字典序打印出该字符串中字符的所有排列。例如输入字符串abc,则打印出由字符a,b,c所能排列出来的所有字符串abc,acb,bac,bca,cab和cba。  
+
+思路：1.使用经典的回溯算法，每一层代表一次for循环。
+
+![QQ截图20181103095948](G:\GitHub\LearnNote\markdown图片\QQ截图20181103095948.jpg)
+
+
+
+2.使用DFS算法。
+
+
+
+```
+//经典回溯算法
+import java.util.*;
+public class Solution {
+    static Set<String> set ;
+	static public ArrayList<String> Permutation(String str) {
+		if (str == null) return null;
+		
+		set = new TreeSet<>();
+		permutationHelper(str.toCharArray(), 0, set);
+		
+		ArrayList<String> ret = new ArrayList<>();
+		for (String s : set) {
+			ret.add(s);
+		}
+		
+		return ret;
+	}
+	
+	static void permutationHelper(char[] cs, int i, Set<String> set) {
+		if (i == cs.length - 1) {
+			set.add(String.valueOf(cs));
+			return;
+		} 
+		
+		for (int j = i; j < cs.length; j++) {
+			swap(cs, i, j);
+			permutationHelper(cs, i + 1, set);
+			swap(cs, i, j);
+		}
+	}
+
+	private static void swap(char[] cs, int i, int j) {
+		char tmp = cs[i];
+		cs[i] = cs[j];
+		cs[j] = tmp;
+	}
+}
+```
+
+
+
+```
+//dfs算法
+import java.util.*;
+public class Solution {
+    static Set<String> set ;
+	static char[] cs;
+	static public ArrayList<String> Permutation(String str) {
+		if (str == null) return null;
+		ArrayList<String> ret = new ArrayList<>();
+		if (str.length() == 0) return ret;
+		
+		cs = str.toCharArray();
+		set = new TreeSet<>();
+		
+		char[] csNew = new char[cs.length];
+		permutationDfs(csNew, new int[cs.length], 0, set);
+		
+		
+		for (String s : set) {
+			ret.add(s);
+		}
+		
+		return ret;
+	}
+	
+	
+	static void permutationDfs(char[] csNew, int[] book,  int id, Set<String> set) {
+		if (id == book.length) {
+			set.add(String.valueOf(csNew));
+			return;
+		}
+		
+		for (int i = 0; i < book.length; i++) {
+			if (book[i] == 0) {
+				book[i] = 1;
+				
+				csNew[id] = cs[i];//id的值在本次循环中不能被改变
+				permutationDfs(csNew, book, id + 1, set);
+				
+				book[i] = 0;
+			}
+		}
+	}
+}
+```
+
+
+
+#### 28 数组中出现次数超过一半的数字 
+
+数组中有一个数字出现的次数超过数组长度的一半，请找出这个数字。例如输入一个长度为9的数组{1,2,3,2,2,2,5,4,2}。由于数字2在数组中出现了5次，超过数组长度的一半，因此输出2。如果不存在则输出0。 
+
+思路：2种算法，1是hashMap，key为数组中的数字，value是次数，时间复杂度O(n)，但是对空间有一定的浪费；方法2采用快排算法，当pivot的下标等于 len/2时，判断该数字是否出现超过一半。
+
+```
+public class Solution {
+    public int MoreThanHalfNum_Solution(int [] arr) {
+		if (arr == null || arr.length == 0) return 0;
+		if (arr.length == 1) return arr[0];
+		
+		int targetId = arr.length / 2;
+		int targetValue = findNum(arr, targetId);
+		
+		//再次校验出现次数是否超过一半
+		int time = 0;
+		for (int v : arr) {
+			if (v == targetValue) time++;
+		}
+		
+		if (time < arr.length / 2 + 1) targetValue = 0;
+		return targetValue;
+	}
+	
+	int findNum(int[] arr, int id) {
+		int left = 0; 
+		int right = arr.length - 1;
+		
+		while (left < right) {
+			int pivot = partition(arr, left, right);
+			 
+			if (pivot < id) {
+				left = pivot + 1;
+			} else if (pivot > id) {
+				right = pivot - 1;
+			} else {
+				return arr[pivot];
+			}
+		}
+		
+		return 0; //没有找到
+	}
+	
+	int partition(int[] arr, int left, int right) {
+		int pivot = left - 1;
+		int base = arr[right];
+		for (int i = left; i <= right; i++) {
+			if (arr[i] <= base) {
+				swap(arr, ++pivot, i);
+			}
+		}
+		return pivot;
+	}
+	
+	private static void swap(int[] arr, int i, int j) {
+		int tmp = arr[i];
+		arr[i] = arr[j];
+		arr[j] = tmp;
+	}
+}
+```
+
