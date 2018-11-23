@@ -1398,3 +1398,112 @@ public class Solution {
 }
 ```
 
+
+
+#### 29 最小的K个数
+
+输入n个整数，找出其中最小的K个数。例如输入4,5,1,6,2,7,3,8这8个数字，则最小的4个数字是1,2,3,4,。
+
+思路：
+
+1. 进行K次选择排序，时间复杂度n*K
+
+2. 使用大小为K的最大堆，插入n次，最后的堆就是所求结果，n*logK
+
+```
+
+import java.util.*;
+public class Solution {
+	public ArrayList<Integer> GetLeastNumbers_Solution(int [] input, int k) {
+		ArrayList<Integer> ret = new ArrayList<Integer>();
+		if (input == null || input.length < k) return ret;
+
+		for (int i = 0; i < k; i++) {
+			int min = i;
+			for (int j = i + 1; j < input.length; j++) {
+				if (input[j] < input[min]) {
+					min = j;
+				}
+			}
+			
+			if (min != i) {
+				int temp = input[min];
+				input[min] = input[i];
+				input[i] = temp;
+			}
+			
+			ret.add(input[i]);
+		}
+		return ret;
+	}
+
+}
+```
+
+```
+
+import java.util.*;
+public class Solution {
+    public ArrayList<Integer> GetLeastNumbers_Solution(int [] input, int k) {
+        ArrayList<Integer> ret = new ArrayList<Integer>();
+        if (input == null || input.length < k || k == 0) return ret;
+        PriorityQueue<Integer> maxStack = new PriorityQueue<Integer>(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2.compareTo(o1);
+            }
+        });
+        
+
+    for (int i = 0; i < input.length; i++) {
+        if (i < k) {
+            maxStack.add(input[i]);
+            continue;
+        }
+        
+        if (input[i] < maxStack.peek()) {
+            maxStack.poll();
+            maxStack.add(input[i]);
+        }
+    }
+    
+    for (Integer v : maxStack) {
+        ret.add(v);
+    }
+    return ret;
+}
+```
+
+#### 30 连续子数组的最大和
+
+HZ偶尔会拿些专业问题来忽悠那些非计算机专业的同学。今天测试组开完会后,他又发话了:在古老的一维模式识别中,常常需要计算连续子向量的最大和,当向量全为正数的时候,问题很好解决。但是,如果向量中包含负数,是否应该包含某个负数,并期望旁边的正数会弥补它呢？例如:{6,-3,-2,7,-15,1,2,2},连续子向量的最大和为8(从第0个开始,到第3个为止)。给一个数组，返回它的最大连续子序列的和，你会不会被他忽悠住？(子向量的长度至少是1)
+
+思路：使用动态规划，dp[i]表示下标为i的元素结尾处序列的最大和，如果当前和为负数，则不计入之后的序列，下一个序列从新开始累加。
+
+```
+public class Solution {
+	//计算连续子向量的最大和  {6,-3,-2,7,-15,1,2,2}
+	//如果向量和为负数，则下一个元素不需要接着前面的向量了，重新构造子向量
+    static public int FindGreatestSumOfSubArray(int[] array) {
+        if (array == null || array.length == 0) return 0;
+        int[] dp = new int[array.length];
+
+        dp[0] = array[0];
+        int max = array[0];
+
+        for (int i = 1; i < array.length; i++) {
+            if (dp[i-1] < 0) {
+            	//如果当前子向量和为负数，则下一个元素不需要添加到前面的向量了，重新构造子向量
+                dp[i] = array[i];
+            } else {
+                dp[i] = dp[i-1] + array[i];//为正 继续添加
+            }
+            max = Math.max(max, dp[i]);
+        }
+
+        return max;
+    }
+}
+```
+
+
