@@ -1507,3 +1507,109 @@ public class Solution {
 ```
 
 
+
+#### 31 整数中1出现的次数（从1到n整数中1出现的次数）
+
+求出1~13的整数中1出现的次数,并算出100~1300的整数中1出现的次数？为此他特别数了一下1~13中包含1的数字有1、10、11、12、13因此共出现6次,但是对于后面问题他就没辙了。ACMer希望你们帮帮他,并把问题更加普遍化,可以很快的求出任意非负整数区间中1出现的次数（从1 到 n 中1出现的次数）。
+
+思路：提供一个求单个整数中1出现次数的API即可，有2种方法。
+
+1. 采用直观的算法，对每一个整数求1的个数，依次判断个位，十位，百位等是否为1.
+2. 使用数学思维，可参考牛客。
+
+```
+public class Solution {
+    public int NumberOf1Between1AndN_Solution(int n) {
+        int sum = 0;
+        for (int i = 1; i <= n; i++) {
+            sum += getOneNum(i);
+        }
+        return sum;
+
+    }
+
+    private static int getOneNum(int num) {
+        int ret = 0;
+        while (num > 0) {
+            if (num % 10 == 1) ret++;
+            num /= 10;
+        }
+        return ret;
+    }
+}
+```
+
+
+
+#### 32 把数组排成最小的数
+
+输入一个正整数数组，把数组里所有数字拼接起来排成一个数，打印能拼接出的所有数字中最小的一个。例如输入数组{3，32，321}，则打印出这三个数字能排成的最小数字为321323。
+
+思路：排序算法，只是排序的规则是，看2个数字组合出的数字的大小，使用组合出最小的数字方式。
+
+快排 + 组合数字大小比较
+
+```
+import java.util.*;
+
+public class Solution {
+    
+    public String PrintMinNumber(int [] numbers) {
+        qSort(numbers, 0, numbers.length - 1);
+        StringBuilder sb = new StringBuilder();
+        for (int v : numbers) sb.append(v);
+        return sb.toString().trim();
+    }
+
+    private static void qSort(int [] numbers, int left, int right) {
+        if (left >= right) return;
+
+        int pivot = patition(numbers, left, right);
+        qSort(numbers, left, pivot - 1);
+        qSort(numbers, pivot + 1, right);
+    }
+
+    private static int patition(int[] numbers, int left, int right) {
+        int pivot = left - 1;
+        int base = numbers[right];
+        for (int i = left; i <= right; i++) {
+            if (needExchange(base, numbers[i])) {
+                swap(numbers, ++pivot, i);
+            }
+        }
+        return pivot;
+    }
+
+    private static void swap(int[] numbers, int i, int k) {
+        int temp = numbers[i];
+        numbers[i] = numbers[k];
+        numbers[k] = temp;
+    }
+
+    private static boolean needExchange(int base, int number) {
+        long baseF = base;
+        long numF = number;
+
+        int backNum = number;
+        int backBase = base;
+
+        while (backNum > 0) {
+            baseF *= 10;
+            backNum /= 10;
+        }
+        baseF += number;
+
+        while (backBase > 0) {
+            numF *= 10;
+            backBase /= 10;
+        }
+        numF += base;
+
+//        System.out.println("baseF:" + baseF + ", numF:" + numF);
+
+        if (baseF >= numF) return true;
+        return false;
+    }
+}
+```
+

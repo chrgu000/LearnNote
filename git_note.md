@@ -2,7 +2,7 @@
 
 在公司期间使用Git进行项目开发，现将一些常用的git命令和操作习惯总结一下。一个git的工作原理示意图。
 
-![QQ截图20181020210345](G:\GitHub\LearnNote\markdown图片\QQ截图20181020210345.jpg)
+![QQ截图20181020210345](.\markdown_image\QQ截图20181020210345.jpg)
 
 git 个人信息配置，用户名，密码，key等。
 
@@ -202,6 +202,76 @@ Creating a new branch is quick AND simple. //表示新的commit修改的代码
 ```
 
 根据实际需求将冲突修改，然后 git add , commit 。
+
+
+
+##### 将本地的git仓库push到gitHub:
+
+1. 首先将本机的ssh key添加到gitHub的ssh key设置中
+
+    C:\Users\\{username}\\.ssh\id_rsa.pub ---> gitHub--ssh---key
+
+2. 在gitHub中新建一个仓库，复制其https的链接地址
+
+3. 在本地git仓库中，绑定远程仓库地址
+
+    `git remote add origin https://github.com/zhhtao89/MavenSpringBootLearn.git`
+
+   如果绑定错了，重新绑定前需要先接触之前的绑定：
+
+   `git remote remove origin`
+
+4. 在push前，如果远程仓库不是空的，那么需要先rebase： `git pull --rebase origin master`
+
+5. push并进行分支绑定，不然无法push: `git push --set-upstream origin master`
+
+   ​	（PS:网上使用`git push -u master origin`）
+
+6. 之后即可正常操作。
+
+
+
+#### Git merge
+
+有2种场景，
+
+第一种，只修改指针，不创建新的`commit`：
+
+当我们创建新的分支，例如`dev`时，Git新建了一个指针叫`dev`，指向`master`相同的提交，再把`HEAD`指向`dev`，就表示当前分支在`dev`上：
+
+![1542359635018](.\markdown_image/1542359635018.png)
+
+你看，Git创建一个分支很快，因为除了增加一个`dev`指针，改改`HEAD`的指向，工作区的文件都没有任何变化！
+
+不过，从现在开始，对工作区的修改和提交就是针对`dev`分支了，比如新提交一次后，`dev`指针往前移动一步，而`master`指针不变：
+
+![微信截图_20181116171810](.\markdown_image/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20181116171810.png)
+
+假如我们在`dev`上的工作完成了，就可以把`dev`合并到`master`上。Git怎么合并呢？最简单的方法，就是直接把`master`指向`dev`的当前提交，就完成了合并：
+
+![微信截图_20181116171934](.\markdown_image/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20181116171934.png)
+
+
+
+第二种，要合并的分支和当前分支有差异，需要新建一个提交。
+
+假设下面的历史节点存在，并且当前所在的分支为`master`：
+
+![微信截图_20181116172254](.\markdown_image/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20181116172254.png)
+
+那么
+
+```
+git merge topic
+```
+
+命令将会把在master分支上二者共同的节点（E节点）之后分离的节点（即topic分支的A B C节点）重现在master分支上，直到topic分支当前的commit节点（C节点），并位于master分支的顶部。并且沿着master分支和topic分支创建一个记录合并结果的新节点，该节点带有用户描述合并变化的信息。
+
+> 即下图中的H节点，C节点和G节点都是H节点的父节点。
+
+![1542360212219](.\markdown_image/1542360212219.png)
+
+
 
 
 
