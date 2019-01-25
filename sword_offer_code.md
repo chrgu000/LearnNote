@@ -1613,3 +1613,819 @@ public class Solution {
 }
 ```
 
+
+
+#### 33 丑数
+
+把只包含质因子2、3和5的数称作丑数（Ugly Number）。例如6、8都是丑数，但14不是，因为它包含质因子7。 习惯上我们把**1当做是第一个丑数**。求按从小到大的顺序的第N个丑数。
+
+对于任何丑数p，那么2*p,3*p,5*p都是丑数，并且2*p<3*p<5*p，暴力的算法是，对于当前的丑数数列，最大值是N，让每个丑数都分别乘以2,3,5，得到比N大的值的集合，找出集合的最小值，就是下一个丑数了。高效的算法是，每次计算下一个丑数时候，找出用于乘以2的最大数M2，乘以3的最大数M3和乘以5的最大数M5，下一个丑数就是
+
+> min (M2\*2,  M3\*3, M5*5)
+
+其中M2的数组下标是I2，应该满足 `arr[I2]*2 <= N 且 arr[I2+1]*2 > N` ,M3 M5也是同理。
+
+```
+    public static int GetUglyNumber_Solution(int index) {
+        if (index <= 1) return index;
+        int i2 = 0, i3 = 0, i5 = 0;
+
+        List<Integer> list = new ArrayList<>();
+        list.add(1);
+
+        int id = 1;
+        while (id++ < index) { //计算 index - 1 次
+            int nextUglyNum = Math.min(list.get(i2) * 2, 
+            Math.min(list.get(i3) * 3, list.get(i5) * 5));
+            list.add(nextUglyNum);
+
+            while (list.get(i2) * 2 <= nextUglyNum) i2++;
+            while (list.get(i3) * 3 <= nextUglyNum) i3++;
+            while (list.get(i5) * 5 <= nextUglyNum) i5++;
+        }
+        return list.get(index-1);
+    }
+```
+
+
+
+#### 34 第一个只出现一次的字符
+
+在一个字符串(0<=字符串长度<=10000，全部由字母组成)中找到第一个只出现一次的字符,并返回它的位置, 如果没有则返回 -1（需要区分大小写）.
+
+思路：使用LinkedHashMap，
+
+```java
+public int FirstNotRepeatingChar(String str) {
+    Map<Character, Integer> map = new LinkedHashMap<>(32);
+    char c = 'a';
+    for (int i = 0; i < str.length(); i++) {
+        c = str.charAt(i);
+        if (map.containsKey(c)) {
+            map.put(c, map.get(c) + 1);
+        } else {
+            map.put(c, 1);
+        }
+    }
+
+    char res;
+    Set<Entry<Character, Integer>> set = map.entrySet();
+    for (Entry<Character, Integer> entry : set) {
+        if (entry.getValue() == 1) {
+             return str.indexOf(entry.getKey());
+        }
+    }
+
+    return -1;
+}
+
+```
+
+```java
+
+使用一个数组book[]，数组的下标是char的值，数组的值是出现次数，这样数组最大值255。
+第一次遍历，填充数组，第二次遍历，找到第一个值为1 book，value
+	public int FirstNotRepeatingChar(String str) {
+		if (str == null) return -1;
+		int[] book = new int[256];
+		
+		for (int i=0; i<str.length(); i++) {
+			book[str.charAt(i)]++;
+		}
+		
+		for (int i=0; i<str.length(); i++) {
+			if (book[str.charAt(i)] == 1)
+				return i;
+		}
+        return -1;
+    }
+```
+
+
+
+#### 35 数组中的逆序对
+
+在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组,求出这个数组中的逆序对的总数P。并将P对1000000007取模的结果输出。 即输出P%1000000007
+
+思路：直观的思路是，设定一个计数值count, 对数组的每个数字，扫描其后面的数字，如果后面的数字大于当前数字，则count加一，这样的时间复杂度是 O(n2)。
+
+优化的算法是对归并排序进行调整，在对2个排序过的子数组重新排序的时候，从子数组右边最大值开始比较，比较结果从右往左插入到临时数组，如果左边数组的值大于右边数组，说明该值大于右边数组中的所有剩余数字，则count值要加上右面数组到其左边界的元素值个数。
+
+如 [6, 7], [4, 5] ,6和5比较，6 > 5，则6大于5,4 ，count值 + 2。
+
+```java
+public class Solution {
+    public static int InversePairs(int [] arr) {
+		count = 0;
+		mergeSort(arr, 0, arr.length-1);
+//		System.out.println(Arrays.toString(arr));
+//		System.out.println(count % 1000000007);
+		return count;
+    }
+	static void mergeSort(int[] arr, int left, int right) {
+        if (left >= right) return;
+        int mid = (left + right) / 2;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid+1, right);
+        merge(arr, left, mid, right);
+    }
+    
+    static void mergeSort2(int[] arr) {
+        int len = arr.length;
+        int sl = 1, dl = 1;
+        while (sl < len) {
+            dl = sl * 2;
+            int i = 0;
+            while (i + dl < len) {
+                merge(arr, i, i+sl-1, i+dl-1);
+                i += dl;
+            }
+            if (i + sl < len) {
+                merge(arr, i, i+sl-1, len-1);
+            }
+            sl = dl;
+        }
+    }
+    static int count = 0;
+    private static void merge(int[] arr, int left, int mid, int right) {
+        int[] temp = new int[right-left+1];
+        int id = temp.length - 1;
+        int l = mid, r = right;
+        while (l >= left && r > mid) {
+        	if (arr[l] > arr[r]) {
+                
+        		count += r - mid;
+                if (count > 1000000007) {
+        			count = count % 1000000007;
+        		}
+                
+        		temp[id--] = arr[l--];
+        	} else {
+        		temp[id--] = arr[r--];
+        	}
+        }
+        
+        while (l >= left) {
+            temp[id--] = arr[l--];
+        }
+        
+        while (r > mid) {
+            temp[id--] = arr[r--];
+        }
+        
+        for (int i=0; i<temp.length; i++) {
+            arr[i+left] = temp[i];
+        }
+    }
+
+
+    private static void swap(int[] arr, int a, int b) {
+    	int t = arr[a];
+    	arr[a] = arr[b];
+    	arr[b] = t;
+    }
+
+}
+
+
+public class Solution {
+    static int count = 0;
+    public static int InversePairs(int [] arr) {
+        count = 0;
+        mergeSort(arr, 0, arr.length-1);
+        
+        return count;
+    }
+
+    static void mergeSort(int[] arr, int left, int right) {
+        if (left >= right) return;
+        int mid = left + (right - left) / 2;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
+        mergePartition(arr, left, mid, right);
+    }
+
+    private static void mergePartition(int[] arr, int left, int mid, int right) {
+        int subR1 = mid;
+        int subR2 = right;
+        int len = right - left + 1;
+
+        int[] temp = new int[len];
+        int tId = len - 1;
+
+        while (subR1 >= left && subR2 >= mid + 1) {
+            if (arr[subR1] > arr[subR2]) {
+                count += (subR2 - mid);
+                count = count % 1000000007;
+                
+                temp[tId--] = arr[subR1--];
+            } else {
+                temp[tId--] = arr[subR2--];
+            }
+        }
+
+        while (subR1 >= left) temp[tId--] = arr[subR1--];
+        while (subR2 >= mid+1) temp[tId--] = arr[subR2--];
+
+        for (int i = 0; i < len; i++) {
+            arr[left+i] = temp[i];
+        }
+    }
+}
+```
+
+
+
+#### 36 两个链表的第一个公共结点
+
+输入两个链表，找出它们的第一个公共结点。
+
+思路： 如果两个链表有公共节点，那么他们的最后的节点是相同的，可以先计算他们的长度，让长的先走几步，使得2个链表接下来的长度相等，然后逐个遍历，找到相同的节点。
+
+```java
+/*
+public class ListNode {
+    int val;
+    ListNode next = null;
+
+    ListNode(int val) {
+        this.val = val;
+    }
+}*/
+public class Solution {
+    public ListNode FindFirstCommonNode(ListNode pHead1, ListNode pHead2) {
+        if (pHead1 == null || pHead2 == null) return null;
+        int len1 = 0, len2 = 0;
+        
+        ListNode node = pHead1;
+        while (node != null) {
+            node = node.next;
+            len1++;
+        }
+        
+        node = pHead2;
+        while (node != null) {
+            node = node.next;
+            len2++;
+        }
+        
+        int diff = Math.abs(len1 - len2);
+        
+        if (len1 > len2) {
+            while (diff-- > 0) pHead1 = pHead1.next;
+        } else {
+            while (diff-- > 0) pHead2 = pHead2.next;
+        }
+        
+        while (pHead1 != null && pHead1.val != pHead2.val) {
+            pHead1 = pHead1.next;
+            pHead2 = pHead2.next;
+        }
+        
+        if (pHead1 != null) {
+            return pHead1;
+        }
+        return null;
+    }
+}
+```
+
+
+
+#### 37 数字在排序数组中出现的次数
+
+统计一个数字在排序数组中出现的次数。
+
+思路：类似2分查找，找到待统计的数字，然后向左向右探索，但是这种算法在统计数字出现次数很多时效率比较低，所有可以使用2分查找来选择统计数字最左边的下标left和最右边的下标right，然后相减即可。
+
+```java
+public static int GetNumberOfK(int [] arr , int k) {
+        if (arr == null || arr.length == 0) return 0;
+        int leftId = findIdbyValue(arr, k, true);
+        int rightId = findIdbyValue(arr, k, false);
+        if (leftId != -1 && leftId <= rightId) {
+            return rightId - leftId + 1;
+        }
+        return 0;
+    }
+
+    //求k 在arr中出现的下标，假设k出现多次，isLeft=true,求最左边k的下标，false为最右下标
+    private static int findIdbyValue(int[] arr, int k, boolean isLeft) {
+        int left = 0, right = arr.length - 1;
+        int mid;
+
+        while (left <= right) {
+            mid = left + (right - left) / 2;
+            
+            if (arr[mid] > k) {
+                right = mid - 1;
+            } else if (arr[mid] < k) {
+                left = mid + 1;
+            } else {
+//                return mid;
+                if (isLeft) {
+                    if (mid == 0 || arr[mid-1] != arr[mid]) {
+                        //已经到最左边了
+                        return mid;
+                    } else {
+                        right = mid - 1;
+                    }
+                } else {
+                    if (mid == arr.length - 1 || arr[mid] != arr[mid+1]) {
+                        return mid;
+                    } else {
+                        left = mid + 1;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+```
+
+
+
+#### 38 二叉树的深度
+
+输入一棵二叉树，求该树的深度。从根结点到叶结点依次经过的结点（含根、叶结点）形成树的一条路径，最长路径的长度为树的深度。
+
+思路： 递归，如果节点是null, 返回0，不为null,则返回左右子树深度加一的最大值。
+
+```java
+	public static int TreeDepth(TreeNode root) {
+        if (root == null) return 0;
+        int leftDepth = TreeDepth(root.left);
+        int rightDepth = TreeDepth(root.right);
+        
+        return Math.max(leftDepth, rightDepth) + 1;
+    }
+```
+
+
+
+非递归思路：借助队列，按层次遍历，这是树的常见遍历方法。
+
+```java
+	public static int TreeDepth(TreeNode root) {
+        if (root == null) return 0;
+
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+        int outCount = 0; //遍历当前层时，输出的节点个数，
+        // 等于curAddCount时表明当前层遍历完成，换层
+        int curAddCount = 1; //当前层add到队列的节点个数, 第一次为1
+
+        int depth = 0;
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            outCount++;
+
+            //添加下一层的节点
+            if (node.left != null) queue.add(node.left);
+            if (node.right != null) queue.add(node.right);
+
+            //当前层的节点输出完了，准备切到下一层
+            if (outCount == curAddCount) {
+                outCount = 0;
+                curAddCount = queue.size();
+                depth++;
+            }
+        }
+
+        return depth;
+    }
+```
+
+
+
+#### 39 平衡二叉树
+
+输入一棵二叉树，判断该二叉树是否是平衡二叉树。
+
+思路：递归，最直接的做法，遍历每个结点，借助一个获取树深度的递归函数，根据该结点的左右子树高度差判断是否平衡，然后递归地对左右子树进行判断。
+
+```java
+	public boolean IsBalanced_Solution(TreeNode root) {
+        if (root == null) return true;
+
+        int leftDepth = getDepth(root.left);
+        int rightDepth = getDepth(root.right);
+
+        if (Math.abs(leftDepth - rightDepth) > 1) return false;
+        return IsBalanced_Solution(root.left) && IsBalanced_Solution(root.right);
+    }
+
+    private int getDepth(TreeNode node) {
+        if (node == null) return 0;
+        int left = getDepth(node.left);
+        int right = getDepth(node.right);
+        return Math.max(left, right) + 1;
+    }
+```
+
+这种做法有很明显的问题，在判断上层结点的时候，会多次重复遍历下层结点，增加了不必要的开销。如果改为从下往上遍历，如果子树是平衡二叉树，则返回子树的高度；如果发现子树不是平衡二叉树，则直接停止遍历，这样至多只对每个结点访问一次。 
+
+```java
+	public boolean IsBalanced_Solution(TreeNode root) {
+        return getDepth(root) != -1;
+    }
+
+    private int getDepth(TreeNode node) {
+        if (node == null) return 0;
+        int left = getDepth(node.left);
+        if (left == -1) return -1;
+        int right = getDepth(node.right);
+        if (right == -1) return -1;
+        
+        return Math.abs(left - right) > 1 ? -1 : Math.max(left, right) + 1;
+    }
+```
+
+
+
+#### 40 数组中只出现一次的数字 
+
+一个整型数组里除了两个数字之外，其他的数字都出现了偶数次。请写程序找出这两个只出现一次的数字。
+
+思路：常规思路，排序，遍历数组，找到出现一次的数字，时间复杂度 O(NlogN) + O(N)
+
+还有一种借助异或算法，相同的数字进行异或后为0，不同数字异或等1.
+
+1. 将数组所有数字进行异或，得到一个非0值v
+2. 将数组分成2组，判断条件是 arr[i] & v == 0
+3. 对这2组的数字分别进行异或，得到所求的2个数字。
+
+```java
+//num1,num2分别为长度为1的数组。传出参数
+//将num1[0],num2[0]设置为返回结果
+import java.util.*;
+public class Solution {
+    public void FindNumsAppearOnce(int [] array,int num1[] , int num2[]) {
+        int ret = 0;
+        for (int val: array) {
+            ret = ret ^ val;
+        }
+        List<Integer> zeroArr = new ArrayList<>();
+        List<Integer> nonZeroArr = new ArrayList<>();
+        for (int val : array) {
+            if ((val & ret) == 0) {
+                zeroArr.add(val);
+            } else {
+                nonZeroArr.add(val);
+            }
+        }
+
+        num1[0] = 0;
+        for (Integer val : zeroArr) {
+            num1[0] ^= val;
+        }
+
+        num2[0] = 0;
+        for (Integer val : nonZeroArr) {
+            num2[0] ^= val;
+        }
+    }
+}
+```
+
+
+
+#### 41 和为S的连续正数序列
+
+小明很喜欢数学,有一天他在做数学作业时,要求计算出9~16的和,他马上就写出了正确答案是100。但是他并不满足于此,他在想究竟有多少种连续的正数序列的和为100(至少包括两个数)。没多久,他就得到另一组连续正数和为100的序列:18,19,20,21,22。现在把问题交给你,你能不能也很快的找出所有和为S的连续正数序列? Good Luck!
+
+```
+输出所有和为S的连续正数序列。序列内按照从小至大的顺序，序列间按照开始数字从小到大的顺序
+```
+
+思路：双指针问题，当总和小于sum，大指针继续+，否则小指针+。
+
+```java
+	public static ArrayList<ArrayList<Integer>> FindContinuousSequence(int sum) {
+        ArrayList<ArrayList<Integer>> ret = new ArrayList<>();
+
+        //两个起点，相当于动态窗口的两边
+        int pLow = 1, pHigh = 2;
+        
+        while (pLow < pHigh) {
+            //求和，等差数列，相差1, (a0 + an) * n / 2
+            int curSum = (pLow + pHigh) * (pHigh - pLow + 1) / 2;
+
+            if (curSum == sum) {
+                //组装数列
+                ArrayList<Integer> list = new ArrayList<>();
+                for (int i = pLow; i <= pHigh; i++) {
+                    list.add(i);
+                }
+                ret.add(list);
+                pLow++;//窗口移动，求下一组
+            } else if (curSum < sum) {//当前和小于目标值，窗口右移动
+                pHigh++;
+            } else {//当前和大于目标值，窗口左移动
+                pLow++;
+            }
+        }
+
+        return ret;
+    }
+```
+
+
+
+#### 42 左旋转字符串
+
+汇编语言中有一种移位指令叫做循环左移（ROL），现在有个简单的任务，就是用字符串模拟这个指令的运算结果。对于一个给定的字符序列S，请你把其循环左移K位后的序列输出。例如，字符序列S=”abcXYZdef”,要求输出循环左移3位后的结果，即“XYZdefabc”。是不是很简单？OK，搞定它！
+
+原理：
+
+![1548229422706](D:\note\LearnNote\markdown_image\1548229422706.png)
+
+分别翻转2个子串，然后翻转整个字符串，考察对字符串的操作能力。
+
+```java
+public class Solution {
+    public String LeftRotateString(String str,int n) {
+        if (str == null || str.length() == 0 || n == 0) return str;
+        int len = str.length();
+        n = n % len;
+        char[] cs = str.toCharArray();
+        reverse(cs, 0, n - 1);
+        reverse(cs, n, len - 1);
+        reverse(cs, 0, len - 1);
+        return String.valueOf(cs);
+    }
+
+    private void reverse(char[] cs, int left, int right) {
+        while (left <= right) {
+            char temp = cs[left];
+            cs[left] = cs[right];
+            cs[right] = temp;
+            left++;
+            right--;
+        }
+    }
+}
+```
+
+
+
+#### 43 翻转单词顺序列
+
+牛客最近来了一个新员工Fish，每天早晨总是会拿着一本英文杂志，写些句子在本子上。同事Cat对Fish写的内容颇感兴趣，有一天他向Fish借来翻看，但却读不懂它的意思。例如，“student. a am I”。后来才意识到，这家伙原来把句子单词的顺序翻转了，正确的句子应该是“I am a student.”。Cat对一一的翻转这些单词顺序可不在行，你能帮助他么？
+
+思路：分别翻转每个单词，然后翻转整个句子。
+
+```java
+public class Solution {
+    public String ReverseSentence(String str) {
+        if (str == null || str.length() == 0) return str;
+        char[] cs = str.toCharArray();
+        
+        int preBlankId = -1;
+        int curBlankId = -1;
+
+        for (int i = 0; i < cs.length; i++) {
+            if (cs[i] == ' ') {
+                curBlankId = i;
+            }
+
+            // 翻转空格之间的内容
+            reverse(cs, preBlankId + 1, curBlankId - 1);
+            preBlankId = curBlankId;
+        }
+
+        //翻转最后一个单词
+        reverse(cs, curBlankId+1, cs.length - 1);
+        
+        reverse(cs, 0, cs.length - 1);
+        return String.valueOf(cs);
+    }
+
+    private void reverse(char[] cs, int left, int right) {
+        while (left <= right) {
+            char temp = cs[left];
+            cs[left] = cs[right];
+            cs[right] = temp;
+            left++;
+            right--;
+        }
+    }
+}
+```
+
+
+
+#### 44 扑克牌顺子
+
+LL今天心情特别好,因为他去买了一副扑克牌,发现里面居然有2个大王,2个小王(一副牌原本是54张^_^)...他随机从中抽出了5张牌,想测测自己的手气,看看能不能抽到顺子,如果抽到的话,他决定去买体育彩票,嘿嘿！！“红心A,黑桃3,小王,大王,方片5”,“Oh My God!”不是顺子.....LL不高兴了,他想了想,决定大\小 王可以看成任何数字,并且A看作1,J为11,Q为12,K为13。上面的5张牌就可以变成“1,2,3,4,5”(大小王分别看作2和4),“So Lucky!”。LL决定去买体育彩票啦。 现在,要求你使用这幅牌模拟上面的过程,然后告诉我们LL的运气如何， 如果牌能组成顺子就输出true，否则就输出false。为了方便起见,你可以认为大小王是0。
+
+思路：考察抽象建模能力和理解能力，要求满足2个条件
+
+1. 除0外没有相等的数字
+
+2. 最大最小值相差小于5
+
+   ```java
+   	public boolean isContinuous(int [] numbers) {
+           if (numbers == null || numbers.length < 5) return false;
+   
+           Arrays.sort(numbers);
+           
+           int rightId = numbers.length - 1;
+           int leftNonZeroId = 0; //最左边的非0元素下标
+           for (int i = 0; i <= rightId; i++) {
+               if (numbers[i] != 0) {
+                   leftNonZeroId = i;
+                   break;
+               }
+           }
+           
+           if (numbers[rightId] - numbers[leftNonZeroId] >= 5) return false;
+           for (int i = leftNonZeroId; i < rightId; i++) {
+               if (numbers[i] == numbers[i+1]) {
+                   return false;
+               }
+           }
+           return true;
+       }
+   ```
+
+
+
+#### 45 孩子们的游戏(圆圈中最后剩下的数)
+
+每年六一儿童节,牛客都会准备一些小礼物去看望孤儿院的小朋友,今年亦是如此。HF作为牛客的资深元老,自然也准备了一些小游戏。其中,有个游戏是这样的:首先,让小朋友们围成一个大圈。然后,他随机指定一个数m,让编号为0的小朋友开始报数。每次喊到m-1的那个小朋友要出列唱首歌,然后可以在礼品箱中任意的挑选礼物,并且不再回到圈中,从他的下一个小朋友开始,继续0...m-1报数....这样下去....直到剩下最后一个小朋友,可以不用表演,并且拿到牛客名贵的“名侦探柯南”典藏版(名额有限哦!!^_^)。请你试着想下,哪个小朋友会得到这份礼品呢？(注：小朋友的编号是从0到n-1)
+
+思路：约瑟夫环问题，但是公式不好记，可以使用链表模拟游戏过程。
+
+```java
+public class Solution {
+    public int LastRemaining_Solution(int n, int m) {
+        if (n == 0 || m == 0) return -1;
+
+        LinkedList<Integer> list = new LinkedList<>();
+        for (int i = 0; i < n; i++) {
+            list.add(i);
+        }
+
+        int count = 0;
+        while (list.size() > 1) {
+            count = (count + m - 1) % list.size();
+            list.remove(count);
+        }
+
+        return list.get(0);
+    }
+}
+```
+
+
+
+#### 46 求1+2+3+...+n
+
+求1+2+3+...+n，要求不能使用乘除法、for、while、if、else、switch、case等关键字及条件判断语句（A?B:C）。
+
+思路：利用逻辑与的短路特效进行递归终止条件限定
+
+```java
+public class Solution {
+    public int Sum_Solution(int n) {
+        int sum = n;
+        boolean b = (n > 0) && (sum += Sum_Solution(n-1)) > 0;
+        return sum;
+    }
+}
+```
+
+
+
+#### 47 不用加减乘除做加法
+
+写一个函数，求两个整数之和，要求在函数体内不得使用+、-、*、/四则运算符号。
+
+首先看十进制是如何做的： 5+7=12，
+
+三步走 第一步：相加各位的值，不算进位，得到2。 第二步：计算进位值，得到10. 如果这一步的进位值为0，那么第一步得到的值就是最终结果。  第三步：重复上述两步，只是相加的值变成上述两步的得到的结果2和10，得到12。  
+
+同样我们可以用三步走的方式计算二进制值相加： 5-101，7-111 第一步：相加各位的值，不算进位，得到010，二进制每位相加就相当于各位做异或操作，101^111。  第二步：计算进位值，得到1010，相当于各位做与操作得到101，再向左移一位得到1010，(101&111)<<1。  第三步重复上述两步， 各位相加 010^1010=1000，进位值为100=(010&1010)<<1。      继续重复上述两步：1000^100 = 1100，进位值为0，跳出循环，1100为最终结果。  
+
+```java
+public class Solution {
+    public int Add(int num1,int num2) {
+        int n1,n2;
+        do {
+            n1 = num1 ^ num2;
+            n2 = (num1 & num2) << 1;
+            
+            num1 = n1;
+            num2 = n2;
+        } while (num2 != 0);
+        return num1;
+    }
+}
+```
+
+
+
+#### 48 把字符串转换成整数
+
+将一个字符串转换成一个整数(实现Integer.valueOf(string)的功能，但是string不符合数字要求时返回0)，要求不能使用字符串转换整数的库函数。 数值为0或者字符串不是一个合法的数值则返回0。
+
+思路：主要是判断第一个符号位
+
+```java
+public class Solution {
+    public static int StrToInt(String str) {
+        if (str == null || str.length() == 0) return 0;
+        char[] arr = str.toCharArray();
+
+        int firstDigitId = 0;
+        boolean isNeg = false;
+        if (!Character.isDigit(arr[0])) {
+            firstDigitId = 1;
+            if (arr[0] == '-') isNeg = true;
+        }
+
+        int num = 0;
+        for (int i = firstDigitId; i < arr.length; i++) {
+            if (!Character.isDigit(arr[i])) return 0;
+            num = num * 10 + arr[i] - '0';
+        }
+        return isNeg ? -1 * num : num;
+    }
+}
+```
+
+
+
+#### 49 数组中重复的数字
+
+在一个长度为n的数组里的所有数字都在0到n-1的范围内。 数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是第一个重复的数字2。
+
+思路：暴力解法是对每一个数字，遍历数组，判断是否重复出现O(n2) ；题目说数字范围在0到n-1，所以可以用一个book数组，key是数字值，value是该数字值出现的次数。
+
+还有一个技巧是：遍历数组，当一个数字val被访问过后，对以该数字为下标的值arr[val] + len ，如果val是唯一的，那么arr[val]在第一次访问的时候是 < len的, 如果发现 arr[val] > len，说明它已经被加过，表明该val是重复出现了。 如果一个数组值val大于len,则说明它被加过，它的原始值是当前值 - len.
+
+```java
+	public boolean duplicate(int numbers[],int length,int [] duplication) {
+        if (numbers == null || numbers.length == 0) return false;
+        for (int i = 0; i < numbers.length; i++) {
+            int val = numbers[i]; // 1
+
+            if (val >= length) val -= length; // 3 说明经历了操作2，还原val
+
+            if (numbers[val] >= length) { // 4 如果val是唯一的，那么第一次访问的numbers[val] 
+                duplication[0] = val;     // 肯定小于length
+                return true;
+            }
+
+            numbers[val] += length; // 2
+        }
+        return false;
+    }
+```
+
+
+
+#### 50 构建乘积数组
+
+给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]*A[1]*...*A[i-1]*A[i+1]*...*A[n-1]。不能使用除法。
+
+思路：如果不使用除法，暴力相乘，则每个数乘以N-1次，N个数就是N\*(N-1).
+
+改机：使用2个数组相乘，对于i, 左边数组构造 leftMultiArr[i] = A[0]*A[1]*...*A[i-1]*, 
+
+右边数组构造rightMultiArr[i] = A[i+1]*...*A[n-1]，时间复杂度O(N)
+
+```java
+import java.util.ArrayList;
+public class Solution {
+    public int[] multiply(int[] A) {
+        if (A == null || A.length == 0) return null;
+
+        int len = A.length;
+        int[] leftMultiArr = new int[len];
+        int[] rightMultiArr = new int[len];
+        int[] retArr = new int[len];
+
+        leftMultiArr[0] = 1;
+        for (int i = 1; i < len; i++) {
+            leftMultiArr[i] = leftMultiArr[i-1] * A[i-1];
+        }
+
+        rightMultiArr[len-1] = 1;
+        for (int i = len-2; i >= 0; i--) {
+            rightMultiArr[i] = rightMultiArr[i+1] * A[i+1];
+        }
+
+        for (int i = 0; i < len; i++) {
+            retArr[i] = leftMultiArr[i] * rightMultiArr[i];
+        }
+
+        return retArr;
+    }
+}
+```
+
+
+

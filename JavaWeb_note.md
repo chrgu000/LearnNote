@@ -70,7 +70,7 @@ https://www.cnblogs.com/mr-wid/archive/2013/05/09/3068229.html 21分钟 MySQL �
 
 
 
-#### 5 Docker
+#### 5 Docker and K8S
 
 阮一峰 http://www.ruanyifeng.com/blog/2018/02/docker-tutorial.html
 
@@ -457,7 +457,7 @@ https://blog.csdn.net/tterminator/article/details/53559936  配置多个logger
 
 
 
-#### 15 Java 之泛型通配符 ? extends T 与 ? super T 解惑
+#### 15  ? extends T 与 ? super T 解惑
 
 https://segmentfault.com/a/1190000008423240
 
@@ -473,5 +473,38 @@ PECS原则，Producter使用Extends, 用来读取，程序是生产者，对外�
 
 
 
+#### 16 .gitlab-ci.yml介绍
+
+JB的git之旅-gitlab ci介绍：https://juejin.im/post/5afd42be6fb9a07aaa11793f
+
+ [JB的git之旅--.gitlab-ci.yml介绍- 掘金](https://juejin.im/post/5b1a4438e51d4506d1680ee9)
+
+[YAML 语言教程- 阮一峰的网络日志](http://www.ruanyifeng.com/blog/2016/07/yaml.html)
+
+语法介绍：https://www.jianshu.com/p/e091df2ff1c4
+
+gradle ： http://www.open-open.com/lib/view/open1447139848053.html
 
 
+
+```
+public T get() --- 返回当前线程可用的实际value值
+	获取当前线程，拿到当前线程的filed:ThreadLocalMap, map的key是threadLocal变量，
+	value是实际的值
+	如果map为空
+		调用ThreadLocal的初始化函数初始化value值
+		new一个ThreadLocalMap，并存入一个键值对，key是this，即当前ThreadLocal本身引用
+		value是刚才初始化的value值
+			注意map的实现方式，内部是一个Entry数组，数组的元素不是链表，
+			当key求得的下标冲突时候，使用线性探测发，将下标加一后再判断
+			且Entry继承了WeakReference<ThreadLocal<?>>
+			包含1个field：value，就是存入的value值.
+			key被用在初始化父类构造函数了,
+			super(key)，在后面从map读取数据的时候拿来和传入的key比较
+  
+	如果map不为空
+		根据key,拿到entry的值
+		返回entry的value值。
+
+
+```
