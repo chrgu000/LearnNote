@@ -282,11 +282,24 @@ u：显示用户
 
 aux：常用组合选项；
 
-**kill** -9 PID ，杀死该PID进程。
+**kill** -9 PID ，杀死该PID进程。（-9 表示强制终止。）
 
 **jobs**查看当前作业，
 
 **bg** 1 或者bg %1均可以将对应id为1进程调回前台。
+
+**网络通信命令：**
+
+- 查看当前系统的网卡信息：ifconfig
+- 查看与某台机器的连接情况：ping
+- 查看当前系统的端口使用：netstat -an
+
+假如我们装了一个zookeeper，我们每次开机到要求其**自动启动**该怎么办？
+
+1. 新建一个脚本zookeeper
+2. 为新建的脚本zookeeper添加可执行权限，命令是:`chmod +x zookeeper`
+3. 把zookeeper这个脚本添加到开机启动项里面，命令是：` chkconfig --add zookeeper`
+4. 如果想看看是否添加成功，命令是：`chkconfig --list`
 
 
 

@@ -1,3 +1,5 @@
+
+
 ## 剑指offer刷题Java笔记
 
 #### 1 二维数组中的查找 
@@ -2428,4 +2430,310 @@ public class Solution {
 ```
 
 
+
+#### 51 正则表达式匹配
+
+`请实现一个函数用来匹配包括'.'和'*'的正则表达式。模式中的字符'.'表示任意一个字符，而'*'表示它前面的字符可以出现任意次（包含0次）。 在本题中，匹配是指字符串的所有字符匹配整个模式。例如，`
+
+`字符串"aaa"与模式"a.a"和"ab*ac*a"匹配，但是与"aa.a"和"ab*a"均不匹配`
+
+```java
+public class Solution {
+    public boolean match(char[] str, char[] pattern)
+    {
+        return match2(str, pattern);
+    }
+    
+    static public boolean match2(char[] str, char[] pattern) {
+		if(str==null&&pattern==null)
+            return true;
+        if(str==null||pattern==null)
+            return false;
+          
+        return helper(str,0,str.length,pattern,0,pattern.length);
+    }
+
+	static private boolean helper(char[] str, int i, int length,
+            char[] pattern,int j, int length2) {
+        if(i==length&&j==length2)//主串完事，匹配串也完事
+            return true;
+        if(i!=length&&j==length2)//主串没有完事，匹配串完事
+            return false;
+        if(j+1<length2 && pattern[j+1]=='*'){
+            if(i<length && (str[i]==pattern[j] || pattern[j]=='.')){//主串和模式串当前字符匹配
+                return helper(str, i+1, length, pattern,j, length2)|| //主串向后移动，匹配串不变aaa和a*
+                       helper(str, i+1, length, pattern,j+2, length2)|| //主串向后移动，匹配串跳过a*
+                       helper(str, i, length, pattern,j+2, length2);  //主串不变，匹配模式串后2个字符，跳过a*
+            }else
+                return helper(str, i, length, pattern,j+2, length2);//主串和模式串不匹配，略过c和*
+        }
+        if(i<length&&(str[i]==pattern[j]||(pattern[j]=='.'))){//主串当前字符不为空，要么和模式串匹配，要么模式串为.
+            return helper(str, i+1, length, pattern,j+1, length2);
+        }
+        return false;
+    }
+    
+}
+```
+
+
+
+#### 52 表示数值的字符串
+
+请实现一个函数用来判断字符串是否表示数值（包括整数和小数）。例如，字符串"+100","5e2","-123","3.1416"和"-1E-16"都表示数值。 但是"12e","1a3.14","1.2.3","+-5"和"12e+4.3"都不是。
+
+思路1 使用正则表达式
+
+```java
+public class Solution {
+    public static boolean isNumeric(char[] str) {
+//        return new String(str).matches("[\\+-]?[0-9]*");
+        return new String(str).matches("[\\+\\-]?[0-9]*(\\.[0-9]*)?([Ee][\\+\\-]?[0-9]+)?");
+    }
+}
+```
+
+思路2 
+
+条件筛选： 
+
+e后面一定要接数字，不能出现2次e
+
+第一次出现+-符号，且不是在字符串开头，则也必须紧接在e之后，第二次出现+-符号，则必须紧接在e之后
+
+ e后面不能接小数点，小数点不能出现两次
+
+不合法字符
+
+```C++
+链接：https://www.nowcoder.com/questionTerminal/6f8c901d091949a5837e24bb82a731f2
+来源：牛客网
+
+class Solution {
+public:
+    bool isNumeric(char* str) {
+        // 标记符号、小数点、e是否出现过
+        bool sign = false, decimal = false, hasE = false;
+        for (int i = 0; i < strlen(str); i++) {
+            if (str[i] == 'e' || str[i] == 'E') {
+                if (i == strlen(str)-1) return false; // e后面一定要接数字
+                if (hasE) return false;  // 不能同时存在两个e
+                hasE = true;
+            } else if (str[i] == '+' || str[i] == '-') {
+                // 第二次出现+-符号，则必须紧接在e之后
+                if (sign && str[i-1] != 'e' && str[i-1] != 'E') return false;
+                // 第一次出现+-符号，且不是在字符串开头，则也必须紧接在e之后
+                if (!sign && i > 0 && str[i-1] != 'e' && str[i-1] != 'E') return false;
+                sign = true;
+            } else if (str[i] == '.') {
+              // e后面不能接小数点，小数点不能出现两次
+                if (hasE || decimal) return false;
+                decimal = true;
+            } else if (str[i] < '0' || str[i] > '9') // 不合法字符
+                return false;
+        }
+        return true;
+    }
+};
+```
+
+
+
+53 字符流中第一个不重复的字符
+
+请实现一个函数用来找出字符流中第一个只出现一次的字符。例如，当从字符流中只读出前两个字符"go"时，第一个只出现一次的字符是"g"。当从该字符流中读出前六个字符“google"时，第一个只出现一次的字符是"l"。
+
+```
+如果当前字符流没有存在出现一次的字符，返回#字符。
+```
+
+思路：只出现一次 + 第一个，使用linkedHashMap, key是字符，value是出现次数，遍历完字符流以后找到第一个value=1的key。
+
+高级：
+
+使用哈希表保存，key为字符的ascii码，value为字符的插入**次序下标**。
+使用数组，初始值为-1，如果对应数组值为-1，则保存插入下标值，如果不为-1，
+说明出现过一次了，将其值设置成-2. 最后，数组中非-1，-2的值就是只出现一次的字符下标值，
+查找数组中的最小值，这个最小值对应的数组下标就是所求字符的ASCII码
+
+```java
+public class Solution {
+   int[] book;
+    int insertId = 0;
+    {
+        book = new int[255];
+        for (int i = 0; i < 255; i++) {
+            book[i] = -1;
+        }
+    }
+
+    public void Insert(char ch) {
+        insertId++;
+        if (book[ch] > -1) {
+            book[ch] = -2;
+        } else if (book[ch] == -1) {
+            book[ch] = insertId;
+        }
+    }
+
+    public char FirstAppearingOnce() {
+        int mixValue = Integer.MAX_VALUE;
+        int mixId = -1;
+        for (int i = 0; i < 255; i++) {
+            if (book[i] != -1 && book[i] != -2) {
+                if (book[i] < mixValue) {
+                    mixValue = book[i];
+                    mixId = i;
+                }
+            }
+        }
+        if (mixId != -1) return (char) mixId;
+        return '#';
+    }
+}
+```
+
+
+
+#### 53 链表中环的入口结点
+
+给一个链表，若其中包含环，请找出该链表的环的入口结点，否则，输出null。
+
+//1.设置两个指针(fast, slow)，初始值都指向头，slow每次前进一步，fast每次前进二步，如果链表存在环，
+//则fast必定先进入环，而slow后进入环，两个指针必定在环内相遇。
+//2.从链表头、与相遇点分别设一个指针，每次各走一步，两个指针必定相遇，且相遇第一点为环入口点。
+
+```java
+	public ListNode EntryNodeOfLoop(ListNode pHead) {
+        if (pHead == null) return null;
+        ListNode slow = pHead, fast = pHead;
+        
+        while (true) {
+            if (slow == null || fast.next == null) return null;
+
+            slow = slow.next;
+            fast = fast.next.next;
+            if (slow == fast) break;
+        }
+        
+        fast = pHead;
+        
+        while (fast != slow) {
+            slow = slow.next;
+            fast = fast.next;
+        }
+        
+        return slow;
+    }
+```
+
+
+
+#### 54 删除链表中重复的结点
+
+在一个排序的链表中，存在重复的结点，请删除该链表中重复的结点，重复的结点不保留，返回链表头指针。 例如，链表1->2->3->3->4->4->5 处理后为 1->2->5
+
+思路：得到以该结点起始的无重复结点的起始结点，如果发现重复，则删除（跳过）重复结点
+
+```java
+public class Solution {
+    public ListNode deleteDuplication(ListNode pHead) {
+        ListNode head = getHead(pHead);//头节点也可能会重复
+        ListNode cur = head;
+        while (cur != null) {
+            cur.next = getHead(cur.next);
+            cur = cur.next;
+        }
+        return head;
+    }
+
+    //得到以该结点起始的无重复结点的起始结点，如果发现重复，则删除（跳过）重复结点
+    static ListNode getHead(ListNode pHead) {
+        int count = 0;
+        while (pHead != null && pHead.next != null
+                && pHead.val == pHead.next.val) {
+            count++;
+            pHead = pHead.next;
+        }
+        
+        if (count == 0) {
+            return pHead;
+        } else {
+            return getHead(pHead.next);
+        }
+    }
+}
+```
+
+```java
+//借助一个辅助节点，找到第一个不相同的节点，递归
+public class Solution {
+    public ListNode deleteDuplication(ListNode pHead) {
+        if (pHead == null || pHead.next == null) return pHead;
+
+        if (pHead.val == pHead.next.val) {//2个节点相等，找到第一个不相等的节点
+            ListNode node = pHead.next;
+            while (node!= null && node.val == pHead.val) {
+                node = node.next;
+            }
+            return deleteDuplication(node); //从第一个与当前结点不同的结点开始递归
+        } else {
+            pHead.next = deleteDuplication(pHead.next);//保留当前结点，从下一个结点开始递归
+            return pHead;
+        }
+    }
+}
+```
+
+
+
+#### 55 二叉树的下一个结点
+
+给定一个二叉树和其中的一个结点，请找出中序遍历顺序的下一个结点并且返回。注意，树中的结点不仅包含左右子结点，同时包含指向父结点的指针。
+
+![1548909821694](markdown_image/1548909821694.png)
+
+首先知道中序遍历的规则是：左根右
+
+我们可发现分成两大类：1、有右子树的，那么下个结点就是右子树最左边的点；（eg：D，B，E，A，C，G）     2、没有右子树的，也可以分成两类，a)是父节点左孩子（eg：N，I，L） ，那么父节点就是下一个节点 ； b)是父节点的右孩子（eg：H，J，K，M）找他的父节点的父节点的父节点...直到当前结点是其父节点的左孩子位置。如果没有eg：M，那么他就是尾节点。  
+
+```java
+public class TreeLinkNode {
+    int val;
+    TreeLinkNode left = null;
+    TreeLinkNode right = null;
+    TreeLinkNode next = null;
+
+    TreeLinkNode(int val) {
+        this.val = val;
+    }
+}
+
+public class Solution {
+    public TreeLinkNode GetNext(TreeLinkNode pNode) {
+        if (pNode == null) return null;
+        
+        //如果有右子树，则下一结点为右子树的最左子结点
+        if (pNode.right != null) {
+        	pNode = pNode.right;
+        	while (pNode.left != null) pNode = pNode.left;
+        	return pNode;
+        }
+        //如果没有右子树，则找到第一个是它父节点的左孩子的节点，返回此节点的父节点
+        while (pNode.next != null) {
+        	if (pNode == pNode.next.left) return pNode.next;
+        	pNode = pNode.next;
+        }
+        
+        //退到了根结点，仍没有找到，返回null
+        return null;
+    }
+}
+```
+
+
+
+#### 56 对称的二叉树
+
+请实现一个函数，用来判断一颗二叉树是不是对称的。注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的。
 
