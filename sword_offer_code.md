@@ -8,23 +8,23 @@
 
 解题思路：根据数组规律，可将数组右上角的元素作为搜索的起点，如果目标大于当前元素，则下标下移，如果小于当前元素，则目标上移。   PS：也可以将起点定在左下角。
 
-```
+```java
 public class Solution {
     public boolean Find(int [][] array,int target) {
         int row = array.length, column = array[0].length;
-                 int r = 0, c = column - 1;
+        int r = 0, c = column - 1;
 
-                 while (r < row && c >= 0) {
-                     if (array[r][c] > target) {
-                         c--;
-                     } else if (array[r][c] < target) {
-                         r++;
-                     } else {
-                         return true;
-                     }
-                 }
+        while (r < row && c >= 0) {
+            if (array[r][c] > target) {
+                c--;
+            } else if (array[r][c] < target) {
+                r++;
+            } else {
+                return true;
+            }
+        }
 		 
-		 return false;
+		return false;
     }
 }
 ```
@@ -2736,4 +2736,957 @@ public class Solution {
 #### 56 对称的二叉树
 
 请实现一个函数，用来判断一颗二叉树是不是对称的。注意，如果一个二叉树同此二叉树的镜像是同样的，定义其为对称的。
+
+```java
+public class Solution {
+    //分析：可以用递归实现，一般一颗空树也是一个对称树，在比较两颗子树的候，
+	 //判断左子树的左分支与右子树的右分支对称，右子树的左分支和左子树的右分支 
+	 //对称，那么这颗树就对称，通过上述可以实现递归
+	boolean isSymmetrical(TreeNode root) {
+        if (root == null) return true;
+        return compareTree(root.left, root.right);
+    }
+
+    boolean compareTree(TreeNode left, TreeNode right) {
+        if (left != null && right != null) {
+            if (left.val != right.val) return false;
+            
+            return compareTree(left.left, right.right)
+                    && compareTree(left.right, right.left);
+         }
+        
+        return left == right;
+    }
+}
+```
+
+
+
+#### 57 按之字形顺序打印二叉树
+
+请实现一个函数按照之字形打印二叉树，即第一行按照从左到右的顺序打印，第二层按照从右至左的顺序打印，第三行按照从左到右的顺序打印，其他行以此类推。
+
+按照层次遍历二叉树，借助队列实现，记录每层节点的打印个数，并对第偶数层做翻转处理。
+
+
+
+```java
+import java.util.*;
+public class Solution {
+    
+    public ArrayList<ArrayList<Integer> > Print(TreeNode pRoot) {
+
+        ArrayList<ArrayList<Integer>> ret = new ArrayList<>();
+        ArrayList<Integer> list = new ArrayList<>();
+
+        Queue<TreeNode> queue = new LinkedList<>();
+
+        if (pRoot == null) return ret;
+
+        queue.offer(pRoot);
+        int curCount = 1;
+        int outCount = 0;
+        int depth = 1;
+
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            list.add(node.val);
+            outCount++;
+
+            if (node.left != null) queue.offer(node.left);
+            if (node.right != null) queue.offer(node.right);
+
+            if (outCount == curCount) {
+                if (depth % 2 == 0) {
+                    //第一行按照从左到右的顺序打印，第二层按照从右至左的顺序打印
+                    Collections.reverse(list);
+                }
+                depth++;
+
+                ret.add(new ArrayList<>(list));
+                list.clear();
+                outCount = 0;
+                curCount = queue.size();
+            }
+        }
+
+        return ret;
+    }
+
+}
+```
+
+
+
+#### 58 把二叉树打印成多行
+
+从上到下按层打印二叉树，同一层结点从左至右输出。每一层输出一行。
+
+思路雷同57
+
+```java
+public class Solution {
+    public ArrayList<ArrayList<Integer> > Print(TreeNode pRoot) {
+
+        ArrayList<ArrayList<Integer>> ret = new ArrayList<>();
+        ArrayList<Integer> list = new ArrayList<>();
+
+        Queue<TreeNode> queue = new LinkedList<>();
+
+        if (pRoot == null) return ret;
+
+        queue.offer(pRoot);
+        int curCount = 1;
+        int outCount = 0;
+
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.poll();
+            list.add(node.val);
+            outCount++;
+
+            if (node.left != null) queue.offer(node.left);
+            if (node.right != null) queue.offer(node.right);
+
+            if (outCount == curCount) {
+                
+
+                ret.add(new ArrayList<>(list));
+                list.clear();
+                outCount = 0;
+                curCount = queue.size();
+            }
+        }
+
+        return ret;
+    }
+    
+}
+```
+
+
+
+#### 59 序列化二叉树
+
+请实现两个函数，分别用来序列化和反序列化二叉树
+
+思路：序列化 二叉树的 前序遍历，为null节点则用 # 号替代，每个节点后使用逗号分隔。
+
+```java
+public class Solution {
+    String Serialize(TreeNode root) {
+        StringBuilder sb = new StringBuilder();
+        if (root == null) {
+            return  sb.append("#,").toString();
+        }
+
+        sb.append(root.val + ",");
+        sb.append(Serialize(root.left));
+        sb.append(Serialize(root.right));
+        return sb.toString();
+    }
+
+    int index = -1;
+    TreeNode Deserialize(String str) {
+        if (str == null) return null;
+        String[] strs = str.split(",");
+        return deserialize(strs);
+    }
+
+    TreeNode deserialize(String[] strs) {
+        if (strs == null || strs.length == 0) return null;
+        String value = strs[++index];
+        TreeNode node = null;
+        if (!value.equals("#")) {
+            node = new TreeNode(Integer.valueOf(value));
+            node.left = deserialize(strs);
+            node.right = deserialize(strs);
+        }
+        return node;
+    }
+}
+```
+
+
+
+#### 60 二叉搜索树的第k个结点
+
+给定一棵二叉搜索树，请找出其中的第k小的结点。例如， （5，3，7，2，4，6，8）    中，按结点数值大小顺序第三小结点的值为4。
+
+思路：二叉搜索树的中序遍历是排序数组，从小到大排序，即找出中序遍历的第 K 个结点。
+
+```java
+public class Solution {
+    int cnt = 0;
+	TreeNode KthNode(TreeNode root,int k) {
+		if (root == null) return null;
+		TreeNode target = KthNode(root.left, k);
+		if (target != null) 
+			return target;
+		if (++cnt < k) {
+			return KthNode(root.right, k);
+		} else if (cnt == k) {
+			return root;
+		}
+		
+		return null;
+	}
+
+}
+```
+
+
+
+```java
+import java.util.*;
+
+public class Solution {
+    TreeNode KthNode(TreeNode pRoot, int k)
+    {
+        travel(pRoot, k);
+        return target;
+    }
+
+
+    List<Integer> list = new ArrayList<>();
+    TreeNode target = null;
+    void travel(TreeNode node, int k) {
+        if (node == null || list.size() >= k) return;
+        travel(node.left, k);
+        list.add(node.val);
+        if (list.size() == k) {
+            target = node;
+        }
+        travel(node.right, k);
+    }
+
+}
+```
+
+
+
+#### 61 数据流中的中位数
+
+如何得到一个数据流中的中位数？如果从数据流中读出奇数个数值，那么中位数就是所有数值排序之后位于中间的数值。如果从数据流中读出偶数个数值，那么中位数就是所有数值排序之后中间两个数的平均值。我们使用Insert()方法读取数据流，使用GetMedian()方法获取当前读取数据的中位数。
+
+思路：构建2个堆，一个最大堆，一个最小堆，使2个堆中数字个数保持相等，最大堆的最大元素小于等于最小堆的最小值。
+
+1. 当数据总数为奇数时，新加入的元素，应当进入小根堆。注意不是直接进入小根堆，而是经大根堆筛选后取大根堆中最大元素进入小根堆。
+2. 当数据总数为偶数时，新加入的元素，应当进入大根堆。先进入小根堆，找出最小值然后放大最大堆。
+
+3. 获取中位数，如果总数为奇数，则读取最小堆的堆顶值，如果是偶数，则取最大堆最小堆的堆顶平均值。
+
+```java
+import java.util.*;
+public class Solution {
+
+    Queue<Integer> minHeap = new PriorityQueue<>();
+    Queue<Integer> maxHeap = new PriorityQueue<>(11, (o1, o2) -> o2.compareTo(o1));
+    int count = 0;
+    public void Insert(Integer num) {
+        count++;
+        if (count % 2 == 1) {//奇数 插入到 最小堆
+            maxHeap.offer(num);
+            int val = maxHeap.poll();
+            minHeap.offer(val);
+        } else {
+            minHeap.offer(num);
+            int val = minHeap.poll();
+            maxHeap.offer(val);
+        }
+    }
+
+    public Double GetMedian() {
+        if (count % 2 == 1) {
+            return minHeap.peek() * 1.0;
+        } else {
+            return (minHeap.peek() + maxHeap.peek()) / 2.0;
+        }
+    }
+}
+```
+
+
+
+#### 62 滑动窗口的最大值
+
+给定一个数组和滑动窗口的大小，找出所有滑动窗口里数值的最大值。例如，如果输入数组{2,3,4,2,6,2,5,1}及滑动窗口的大小3，那么一共存在6个滑动窗口，他们的最大值分别为{4,4,6,6,6,5}； 针对数组{2,3,4,2,6,2,5,1}的滑动窗口有以下6个： {[2,3,4],2,6,2,5,1}， {2,[3,4,2],6,2,5,1}， {2,3,[4,2,6],2,5,1}， {2,3,4,[2,6,2],5,1}， {2,3,4,2,[6,2,5],1}， {2,3,4,2,6,[2,5,1]}。
+
+思路就是采用双端队列，队列中的头节点保存的数据比后面的要大。
+​      比如当前假如的数据比队尾的数字大，说明当前这个数字最起码在从现在起到后面的过程中可能是最大值
+​      ，而之前队尾的数字不可能最大了，所以要删除队尾元素。
+​      此外，还要判断队头的元素是否超过size长度，由于存储的是下标，所以可以计算得到；
+​      特别说明，我们在双端队列中保存的数字是传入的向量的下标；
+
+```java
+import java.util.*;
+public class Solution {
+    public ArrayList<Integer> maxInWindows(int [] num, int size)
+    {
+        Deque<Integer> deque = new LinkedList();
+        ArrayList<Integer> ret = new ArrayList<>();
+        if (num == null || num.length == 0 || size > num.length || size == 0) return ret;
+
+
+        for (int i = 0; i < num.length; i++) {
+            // 4 如果窗口滑动移除的值是当前队列最大值，则从队列清除 i-size是滑动后移除的下标
+            if (i >= size && !deque.isEmpty() 
+                && num[i-size] == num[deque.getFirst()]) {
+                deque.removeFirst();
+            }
+
+            // 3 如果当前元素比队列中尾部的大，则删除比它小的,
+            // 因为在它被移除前，前面的数字都没有价值了
+            while (!deque.isEmpty() 
+                   && num[i] > num[deque.getLast()]) deque.removeLast();
+
+            //1 添加下标到队列,最大值下标在队列头部
+            deque.offer(i);
+
+            //2.找出最大值加入到list
+            if (i >= size - 1) {
+                ret.add(num[deque.getFirst()]);
+            }
+        }
+        return ret;
+    }
+}
+```
+
+
+
+#### 63 矩阵中的路径
+
+请设计一个函数，用来判断在一个矩阵中是否存在一条包含某字符串所有字符的路径。路径可以从矩阵中的任意一个格子开始，每一步可以在矩阵中向左，向右，向上，向下移动一个格子。如果一条路径经过了矩阵中的某一个格子，则之后不能再次进入这个格子。 例如 a b c e s f c s a d e e 这样的3 X 4 矩阵中包含一条字符串"bcced"的路径，但是矩阵中不包含"abcb"路径，因为字符串的第一个字符b占据了矩阵中的第一行第二个格子之后，路径不能再次进入该格子。
+
+```java
+public class Solution {
+    static public boolean hasPath(char[] matrix, int rows, int cols, char[] str)
+	 {
+		 if (matrix == null || str == null || str.length == 0 || 
+			 matrix.length == 0 || matrix.length != rows*cols) return false;
+			 
+		 for (int i=0; i<rows; i++) {
+			 for (int j=0; j<cols; j++) {
+				 //寻找起始位置
+				 if (matrix[i*cols+j] == str[0]) {
+					 if (dfs(matrix, rows, cols, new int[rows*cols], str, 0, j, i)) {
+						 return true;
+					 }
+				 }
+			 }
+		 }
+		 
+		 return false;
+	 }
+	 
+	 //book是用来标记一个位置是否被进入过
+	 //id 是遍历str字符串时的下标
+	 //x,y是对应二维矩阵中的坐标位置
+	 static boolean dfs(char[] matrix, int rows, int cols, 
+			 		 int[] book, char[] str, int id, int x, int y) {
+		 boolean res = false;
+		 //字符串被找到
+		 if (id == str.length) {
+			 return true;
+		 }
+		 
+		 //边界判断
+		 if (x < 0 || x >= cols || y < 0 || y >= rows) return false;
+		 
+		 int index = x + y*cols;//对应matrix下标
+		 if (matrix[index] == str[id] && book[index] == 0) {
+			 book[index] = 1;//标志已经进入
+			 //进入下一批格子
+             res = res || dfs(matrix, rows, cols, book, str, id+1, x+1, y)
+                 || dfs(matrix, rows, cols, book, str, id+1, x-1, y)
+                 || dfs(matrix, rows, cols, book, str, id+1, x, y+1)
+                 || dfs(matrix, rows, cols, book, str, id+1, x, y-1);
+             
+             /*
+			 int[][] next = {{0,1},{1,0},{0,-1},{-1,0}};
+			 for (int i=0; i<4; i++) {
+				 int tx = x + next[i][0];
+				 int ty = y + next[i][1];
+				 res = res || dfs(matrix, rows, cols, book, str, id+1, tx, ty);
+			 }
+			 */
+			 book[index] = 0;//清除标志
+		 }
+		 
+		 return res;
+		 
+	 }
+
+}
+```
+
+
+
+```java
+	public boolean hasPath(char[] matrix, int rows, int cols, char[] str)
+    {
+        hasPath = false;
+        for (int y = 0; y < rows; y++) {
+            for (int x = 0; x < cols; x++) {
+                if (matrix[y * cols + x] == str[0]) {
+                    int[] book = new int[rows*cols];
+                    dfs(matrix, rows, cols, str, 0, book, x, y);
+                    if (hasPath) return true;
+                }
+            }
+        }
+        return hasPath;
+    }
+
+    boolean hasPath = false;
+    //例如 rows = 3， cols = 5, 3行5列，book[3][5]
+    void dfs(char[] matrix, int rows, int cols, char[] str,int id, 
+             int[] book, int x, int y) {
+        //结束条件
+        if (id == str.length) {
+            hasPath = true;
+            return;
+        }
+
+        //边界控制 x是横轴坐标
+        if (x < 0 || x >= cols) return;
+        if (y < 0 || y >= rows) return;
+        if (hasPath) return;
+
+        //当前遍历处理
+        // 1.下标转换
+        int matrixId = y * cols + x;
+        if (book[matrixId] == 0 && matrix[matrixId] == str[id]) { // 2.符合继续递归遍历的条件
+            book[matrixId] = 1;
+            int next[][] = {{0,1},{0,-1},{1,0},{-1,0}};
+
+            for (int i = 0; i < 4; i++) {
+                int nextX = x + next[i][0];
+                int nextY = y + next[i][1];
+                dfs(matrix, rows, cols, str, id + 1, book, nextX, nextY);
+            }
+
+            book[matrixId] = 0;
+        }
+    }
+```
+
+
+
+#### 64 机器人的运动范围
+
+地上有一个m行和n列的方格。一个机器人从坐标0,0的格子开始移动，每一次只能向左，右，上，下四个方向移动一格，但是不能进入行坐标和列坐标的数位之和大于k的格子。 例如，当k为18时，机器人能够进入方格（35,37），因为3+5+3+7 = 18。但是，它不能进入方格（35,38），因为3+5+3+8 = 19。请问该机器人能够达到多少个格子？  
+
+核心思路：
+1.从(0,0)开始走，每成功走一步标记当前位置为true,然后从当前位置往四个方向探索，
+返回1 + 4 个方向的探索值之和。
+2.探索时，判断当前节点是否可达的标准为：
+1）当前节点在矩阵内；
+2）当前节点未被访问过；
+3）当前节点满足limit限制。
+
+```java
+public class Solution {
+    public int movingCount(int threshold, int rows, int cols)
+    {
+        int[][] book = new int[rows][cols];
+        int count = dfs(threshold, 0, 0, book, rows, cols);
+        return count;
+    }
+
+    int dfs(int threshold, int rows, int cols, int[][] book, 
+            int limitRows, int limitCols) {
+        if (rows < 0 || rows >= limitRows || cols < 0 || cols >= limitCols) return 0;
+        int count = 0;
+
+        if (book[rows][cols] == 0 && isValid(threshold, rows, cols)) {
+            count++;
+            book[rows][cols] = 1;
+
+            int[][] next = {{0,1}, {0,-1}, {1,0}, {-1,0}};
+            for (int i = 0; i < 4; i++) {
+                int nextRows = rows + next[i][0];
+                int nextCols = cols + next[i][1];
+
+                count += dfs(threshold, nextRows, nextCols,
+                             book, limitRows, limitCols);
+            }
+        }
+
+        return count;
+    }
+
+    boolean isValid(int threshold, int rows, int cols) {
+        if (getNum(rows) + getNum(cols) > threshold) return false;
+        return true;
+    }
+
+    static int getNum(int rows) {
+        int num = 0;
+        while (rows > 0) {
+            num += rows % 10;
+            rows = rows / 10;
+        }
+        return num;
+    }
+}
+```
+
+
+
+#### 65 排序算法
+
+```java
+public class SortDemo {
+
+    static final int SORT_NUM = 10 * 10000;
+
+    public static void main(String[] args) throws Exception {
+        SortDemo demo = new SortDemo();
+        qSort(arr);
+        verify(arr);
+        print(arr);
+//        manyVertify(SortDemo::bubbleSort);
+//        manyVertify(SortDemo::selectSort);
+        manyVertify(SortDemo::insertSort, "insertSort");
+        manyVertify(SortDemo::shellSort, "shellSort");
+
+        manyVertify(SortDemo::qSort, "qSort");
+        manyVertify(SortDemo::qSort2, "qSort2");
+        manyVertify(SortDemo::mergeSort, "mergeSort");
+        demo.manyVertify(SortDemo::heapSort, "heapSort");
+
+        manyVertify(SortDemo::qSortJava, "qSortJava");
+    }
+
+
+    static int[] arr = {9,8,7,5,6,3,4,2,1};
+
+    static void bubbleSort(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            for (int j = 0; j < arr.length - 1 - i; j++) {
+                //几轮后，最末尾的元素已经排好序了，可以不用遍历，边界 - i
+                if (arr[j] > arr[j+1]) {
+                    //前面大于后面，就进行交换，每次把最大的交互到末尾
+                    swap(arr, j, j + 1);
+                }
+            }
+        }
+    }
+
+    static void selectSort(int[] arr) {
+        for (int i = 0; i < arr.length; i++) {
+            int minId = i; //确定轮比较最小值的坑位
+            for (int j = i + 1; j < arr.length; j++) { //找出当前元素的最小值
+                if (arr[j] < arr[minId]) {
+                    minId = j;
+                }
+            }
+            swap(arr, i, minId); //入坑
+        }
+    }
+
+    static void insertSort(int[] arr) {
+        for (int i = 1; i < arr.length; i++) {//从下标1的元素开始，扫描到最后一个
+            int j = i;
+            while (j >= 1) { //将 i 处元素和它之前的元素比较，插入到合适的位置
+                if (arr[j] < arr[j-1]) {
+                    swap(arr, j, j-1);
+                    j--;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    //比较步长动态调整的插入排序算法
+    static void shellSort(int[] arr) {
+        int step = arr.length / 2;
+        while (step >= 1) {
+            insertSort(arr, step);
+            step = step / 2;
+        }
+    }
+
+    //step = 1,就是插入排序了
+    static void insertSort(int[] arr, int step) {
+        for (int i = 1; i < arr.length; i++) {//从下标1的元素开始，扫描到最后一个
+            int j = i;
+            while (j >= step) { //将 i 处元素和它之前的元素比较，插入到合适的位置
+                int beforeId = j - step;
+                if (arr[j] < arr[beforeId]) {
+                    swap(arr, j, beforeId);
+                    j = beforeId;
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    static void qSortJava(int[] arr) {
+        Arrays.sort(arr);
+    }
+
+    static void qSort(int[] arr) {
+        qSort(arr, 0, arr.length - 1);
+    }
+
+    static void qSort2(int[] arr) {
+        qSort2(arr, 0, arr.length - 1);
+    }
+
+    static void qSort(int[] arr, int left, int right) {
+        if (left >= right) return;
+        int pivot = partition(arr, left, right);
+        qSort(arr, left, pivot-1);
+        qSort(arr, pivot+1, right);
+    }
+
+    static void qSort2(int[] arr, int left, int right) {
+        if (left >= right) return;
+        int pivot = partition2(arr, left, right);
+        qSort(arr, left, pivot-1);
+        qSort(arr, pivot+1, right);
+    }
+
+    private static int partition(int[] arr, int left, int right) {
+        int pivot = left - 1;
+        int base = arr[right]; //以右边为基准值
+
+        for (int i = left; i <= right; i++) {
+            if (arr[i] <= base) {
+                swap(arr, ++pivot, i);
+            }
+        }
+        return pivot;
+    }
+
+    private static int partition2(int[] arr, int left, int right) {
+        int random = (int) (left + (right-left)*Math.random());
+        if (random < left || random > right) {
+            System.out.println("wrong");
+        }
+        int base = arr[left];
+        int low = left, high = right;
+
+        while (low < high) {
+            while (high > low && arr[high] >= base) high--;
+            while (low < high && arr[low] <= base) low++;
+
+            if (low < high) {
+                swap(arr, low, high);
+            }
+        }
+        swap(arr, left, low);
+        return low;
+    }
+
+    static void  mergeSort(int[] arr) {
+        mergeSort(arr, 0, arr.length - 1);
+    }
+
+    static void mergeSort(int[] arr, int left, int right) {
+        if (left >= right) return;
+        int mid = left + (right - left) / 2;
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid+1, right);
+        mergePartition(arr, left, mid, right);
+    }
+
+    private static void mergePartition(int[] arr, int left, int mid, int right) {
+        int len = right - left + 1;
+        int[] tempArr = new int[len];
+        int subLeft = left, subRight = mid + 1, arrId = 0;
+
+        while (subLeft <= mid && subRight <= right) {
+            if (arr[subLeft] <= arr[subRight]) {
+                tempArr[arrId++] = arr[subLeft++];
+            } else {
+                tempArr[arrId++] = arr[subRight++];
+            }
+        }
+
+        while (subLeft <= mid) {
+            tempArr[arrId++] = arr[subLeft++];
+        }
+
+        while (subRight <= right) {
+            tempArr[arrId++] = arr[subRight++];
+        }
+
+        for (int i = 0; i < len; i++) {
+            arr[left++] = tempArr[i];
+        }
+    }
+
+    static void heapSort(int[] arr) {
+        //构建最大堆的数组
+        for (int i = arr.length / 2; i >= 0 ; i--) {
+            headAdjust(arr, arr.length - 1, i);
+        }
+
+        for (int i = arr.length - 1; i >= 0; i--) {
+            swap(arr, 0, i);
+            headAdjust(arr, i, 0);
+        }
+    }
+
+    static void headAdjust(int[] arr, int len, int id) {
+        int leftChild = id * 2 + 1;
+
+        while (leftChild < len) {
+            if (leftChild + 1 < len && arr[leftChild + 1] > arr[leftChild]) {
+                leftChild++;
+            }
+
+            if (arr[id] < arr[leftChild]) {
+                swap(arr, id, leftChild);
+
+                id = leftChild;
+                leftChild = id * 2 + 1;
+            } else {
+                break;
+            }
+        }
+    }
+
+    static int[] generateRandomArray() {
+        int[] arr = new int[SORT_NUM];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = (int) (Math.random() * 100);
+        }
+        return arr;
+    }
+
+    static void verify(int[] arr) throws Exception {
+        for (int i = 0; i < arr.length - 1; i++) {
+            if (arr[i] > arr[i+1]) {
+                print(arr);
+                throw new Exception("not ok");
+            }
+        }
+    }
+
+    static void manyVertify(TestForSort testForSort) throws Exception {
+        long start = 0, cost = 0;
+        for (int i = 0; i < 1; i++) {
+            int[] arr = generateRandomArray();
+            start = System.currentTimeMillis();
+            testForSort.sort(arr);
+            cost += System.currentTimeMillis() - start;
+            verify(arr);
+        }
+
+        System.out.printf(" %s %d\n","is ok,cost: ", cost);
+    }
+
+    static void manyVertify(TestForSort testForSort, String methodName) throws Exception {
+        System.out.printf("%15s", methodName);
+        manyVertify(testForSort);
+    }
+
+    public interface TestForSort {
+        void sort(int[] arr);
+    }
+
+    static void swap(int[] arr, int m, int n) {
+        int t = arr[m];
+        arr[m] = arr[n];
+        arr[n] = t;
+    }
+
+    static void print(int[] arr) {
+        System.out.println(Arrays.toString(arr));
+    }
+
+}
+```
+
+
+
+#### 66 树的遍历
+
+前序：根 左 右
+
+中序：左 根 右
+
+后序：左 右 根
+
+```java
+/**
+     * 1. 将头结点入栈
+     * 2. 每次弹出栈顶结点current，存储current结点的值；
+     * 3. 如果current右孩子不为空，将其入栈；
+     * 4. 然后如果current左孩子不为空，将其入栈；
+     * 5. 不断重复2-4直到stack为空
+     *
+     * @param root
+     * @param preOrder
+     */
+    public void preSer(TreeNode root, List<Integer> list) {
+        if (root == null) {
+            return ;
+        }
+        Stack<TreeNode> stack = new Stack<>();
+    	TreeNode cur = root;
+    	
+    	stack.push(cur);
+    	
+    	while (!stack.isEmpty()) {
+    		cur = stack.pop();
+    		list.add(cur.val);
+    		
+    		if (cur.right != null) stack.push(cur.right);
+    		if (cur.left != null) stack.push(cur.left);
+    	}
+    }
+```
+
+```java
+/**
+     * 1. 先把current结点入栈，对以current结点为头的整个子树来说，依次把整棵树的左边界入栈，
+     * 即不断地使current=current.left,然后重复步骤1;
+     * 2. 重复步骤1，如果current为空，则从stack中弹出一个结点node，保存node的值，并让current = node.right，
+     * 重复步骤1；
+     * 3. 当栈为空并且current也为空，整个过程结束；
+     * @param root
+     * @param inOrder
+     * @param b
+     */
+    public void midSer(TreeNode root, List<Integer> list) {//中序,确实已参数形式传进去，会好做些   
+        if (root == null) {
+            return ;
+        }
+        Stack<TreeNode> stack = new Stack<>();
+    	TreeNode cur = root;
+    	
+        while (!stack.isEmpty() || cur != null) {
+        	while (cur != null) {
+        		stack.push(cur);
+        		cur = cur.left;
+        	}
+        	
+        	if (!stack.isEmpty()) {
+        		cur = stack.pop();
+        		list.add(cur.val);
+        		cur = cur.right;
+        	}
+        }
+    }
+ 
+```
+
+
+
+```java
+/**
+     * 1. 先将头结点压入栈，设置变量h和c,h表示最近一次弹出并存储的结点，c表示当前栈的栈顶结点；
+     * 初始时，h为头结点，c为null；
+     * 2. 每次令c等于当前stack的栈顶结点，但是不从stack弹出结点，此时有三种情况：
+     * （1）如果c的左孩子不为空，并且h不等于c的左孩子，也不等于c的右孩子，则把c的左孩子入栈；
+     * （2）如果1不成立，并且c的右孩子不为空，并且h不等于c的右孩子，则把c的右孩子压入栈；
+     * （3）如果1和2都不成立，那么从stack中弹出c并打印，然后令h等于c;
+     * 3. 一直重复步骤2，直到stack为空，停止；
+     * @param root
+     * @param postOrder
+     * @param list.
+     对前序遍历进行修改和调整
+     */
+    
+	public void aftSer(TreeNode root, List<Integer> list) {
+        if (root == null) {
+            return ;
+        }
+        Stack<TreeNode> stack = new Stack<>();
+        Stack<Integer> stackReverse = new Stack<>();
+        TreeNode cur = root;
+        stack.push(cur);
+        
+        while (!stack.isEmpty()) {
+        	cur = stack.pop();
+        	stackReverse.push(cur.val);
+        	
+        	if (cur.left != null) stack.push(cur.left);
+        	if (cur.right != null) stack.push(cur.right);
+        }
+        
+        while (!stackReverse.isEmpty()) {
+        	list.add(stackReverse.pop());
+        }
+    }
+```
+
+
+
+#### 67 minimum-depth-of-binary-tree
+
+Given a binary tree, find its minimum depth.The minimum depth is the number of nodes along the shortest path from the root node down to the nearest leaf node.
+
+```java
+import java.util.ArrayDeque;
+import java.util.Queue;
+public class Solution {
+    public int run(TreeNode root) {
+        if (root == null) return 0;
+		if (root.left == null && root.right == null) {
+			return 1;
+		}
+		if (root.left == null) return run(root.right) + 1;
+		if (root.right == null) return run(root.left) + 1;
+		return Math.min(run(root.left), run(root.right))+1;
+    }
+}
+```
+
+
+
+#### 68 evaluate-reverse-polish-notation
+
+Evaluate the value of an arithmetic expression in [Reverse Polish Notation](http://en.wikipedia.org/wiki/Reverse_Polish_notation).
+
+Valid operators are+,-,*,/. Each operand may be an integer or another expression.
+
+Some examples:
+
+```
+  ["2", "1", "+", "3", "*"] -> ((2 + 1) * 3) -> 9
+  ["4", "13", "5", "/", "+"] -> (4 + (13 / 5)) -> 6
+```
+
+```java
+import java.util.Stack;
+public class Solution {
+    public int evalRPN(String[] tokens) {
+        Stack<Integer> stack = new Stack<>();
+        
+        for (int i=0; i<tokens.length; i++) {
+        	if (tokens[i].matches("[+\\-\\*/]")) {
+        		int b = stack.pop();
+        		int a = stack.pop();
+        		if (tokens[i].equals("+")) {
+        			stack.push(a+b);
+        		} else if (tokens[i].equals("-")) {
+        			stack.push(a-b);
+        		} else if (tokens[i].equals("*")) {
+        			stack.push(a*b);
+        		}else {
+        			stack.push(a/b);
+        		}
+        	} else {
+				stack.push(Integer.parseInt(tokens[i]));
+			}
+        }
+        return stack.pop();
+        
+    }
+}
+```
+
+#### 69 max-points-on-a-line
+
+Given *n* points on a 2D plane, find the maximum number of points that lie on the same straight line.
+
+
 

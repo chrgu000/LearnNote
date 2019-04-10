@@ -174,3 +174,6 @@ def fact(n):
 
 print (fact(10))
 
+import os
+path = os.getenv('java_home')
+print (path)

@@ -68,6 +68,10 @@ https://blog.csdn.net/danielzhou888/article/details/70835418
 
 https://www.cnblogs.com/mr-wid/archive/2013/05/09/3068229.html 21分钟 MySQL 入门教程
 
+分区表：https://my.oschina.net/jasonultimate/blog/548745
+
+
+
 
 
 #### 5 Docker and K8S
@@ -81,6 +85,26 @@ Docker  从最简单的入手学习 Docker
 https://mp.weixin.qq.com/s?__biz=MzIzNzEyNTc5Mg==&mid=100000030&idx=1&sn=3627f11ce45d62a35086c717dd43893e&chksm=68cc28d15fbba1c79340a159165eb8ca228d0b37561da33bfc9d505febc27b500d9853e55444#rd
 
 Docker的八种用途  https://segmentfault.com/a/1190000005826167
+
+K8s
+
+https://kubernetes.io/zh/docs/concepts/overview/what-is-kubernetes/
+
+Kubernetes 可以在物理或虚拟机集群上调度和运行应用程序容器，这样可以提供容器固有的全部优点和益处。Kubernetes 提供了基础设施来构建一个真正以**容器为中心**的开发环境。
+
+
+
+阿里云：
+
+https://www.alibabacloud.com/help/zh/doc-detail/25975.htm?spm=a2c63.p38356.b99.7.5ba46859OTL8iH
+
+**集群**
+
+一个集群指容器运行所需要的云资源组合，关联了若干服务器节点、负载均衡、专有网络等云资源。
+
+10分钟看懂Docker和K8S  https://zhuanlan.zhihu.com/p/53260098
+
+从0到1使用Kubernetes系列——K8s入门 https://zhuanlan.zhihu.com/p/43266412
 
 
 
@@ -371,6 +395,23 @@ https://www.json.org/json-zh.html
 
 https://blog.csdn.net/xiazdong/article/details/7059573
 
+```java
+com.google.gson 库下类
+
+Gson gson = new Gson();
+String json = gson.toJson(request);
+JsonObject jsonObject = new JsonParser().parse(json).getAsJsonObject();
+JsonArray events = jsonObject.get("events").getAsJsonArray();
+for (JsonElement record : events) {
+	String ossKey = record.getAsJsonObject().get("oss").getAsJsonObject()
+        .get("object").getAsJsonObject().get("key").getAsString();
+}
+
+
+JsonObject extends JsonElement
+        
+```
+
 
 
 #### 9 http and websocket
@@ -508,3 +549,40 @@ public T get() --- 返回当前线程可用的实际value值
 
 
 ```
+
+
+
+#### 17 数据库分区表
+
+表分区：是指根据一定规则，将数据库中的一张表分解成多个更小的，容易管理的部分。从逻辑上看，只有一张表，但是底层却是由多个物理分区组成。
+
+分表：指的是通过一定规则，将一张表分解成多张不同的表。比如将用户订单记录根据时间成多个表。 分表与分区的区别在于：分区从逻辑上来讲只有一张表，而分表则是将一张表分解成多张表。
+
+表分区有什么好处？
+
+1）分区表的数据可以分布在不同的物理设备上，从而高效地利用多个硬件设备。 2）和单个磁盘或者文件系统相比，可以存储更多数据 3）优化查询。在where语句中包含分区条件时，可以只扫描一个或多个分区表来提高查询效率；涉及sum和count语句时，也可以在多个分区上并行处理，最后汇总结果。 4）分区表更容易维护。例如：想批量删除大量数据可以清除整个分区。 5）可以使用分区表来避免某些特殊的瓶颈，例如InnoDB的单个索引的互斥访问，ext3问价你系统的inode锁竞争等。
+
+#### 18 spring boot yml
+
+YAML是JSON的一个超集，是一种方便的定义层次**配置数据**的格式，要想使用YAML作为属性配置文件，需要将SnakeYAML库添加到classpath下，Spring Boot对SnakeYAML库也做了集成，例如使用spring-boot-starter-web或spring-boot-starter都会自动添加SnakeYAML库到classpath下。
+
+
+
+#### 19 java中的锁
+
+美团：<https://tech.meituan.com/2018/11/15/java-lock.html>
+
+
+
+#### 20 swagger
+
+<https://blog.csdn.net/small_to_large/article/details/77586765>
+
+Restful接口的文档在线自动生成 + 功能测试软件
+
+常用注解@API 等
+
+
+
+
+
