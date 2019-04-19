@@ -3688,5 +3688,50 @@ public class Solution {
 
 Given *n* points on a 2D plane, find the maximum number of points that lie on the same straight line.
 
+```java
+import java.util.HashMap;
+import java.util.Map;
 
+public class Solution {
+    public int maxPoints(Point[] points) {
+        int ret = 0;
+        if (points == null) return 0;
+        if (points.length <= 2) return points.length;
+
+        Map<Double, Integer> map = new HashMap<>();
+        for (int i = 0; i < points.length; i++) {
+            int repeatedCount = 1;
+            int dx = 0, dy = 0;
+            map.clear();
+            int max = 0;
+            double key = 0;
+            for (int j = 0; j != i && j < points.length; j++) {
+                dx = points[i].x - points[j].x;
+                dy = points[i].y - points[j].y;
+
+                if (dx == 0 && dy == 0) {
+                    repeatedCount++;
+                    continue;
+                }
+
+                if (dx == 0) {
+                    key = Double.POSITIVE_INFINITY;
+                } else {
+                    key = getKey(dx, dy);
+                }
+                
+                map.put(key, map.getOrDefault(key, 0) + 1);
+
+                max = Math.max(max, map.get(key));
+            }
+            ret = Math.max(ret, max + repeatedCount);
+        }
+        return ret;
+    }
+
+    static double getKey(int dx, int dy) {
+        return 1.0*dy/dx;
+    }
+}
+```
 
