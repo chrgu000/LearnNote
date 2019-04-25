@@ -605,7 +605,7 @@ class DuckAdapter extends Bird {
 
 模板方法模式在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法中的某些步骤。
 
-```
+```java
 abstract class AbstractClass {
 	final void templateMethod() {
 		primitiveOperation1();
@@ -647,4 +647,174 @@ class ConcreteClass extends AbstractClass {
 迭代器模式：提供一种方法顺序访问一个集合对象中的各个元素，而又不暴露其内部的表示。
 
 把元素之间游走的任务交给迭代器，而不是集合，这样简化了集合的接口和实现，也让责任各得其所。
+
+#### 11 责任链模式
+
+责任链模式是一种对象的行为模式。在责任链模式里，很多对象由每一个对象对其下家的引用而连接起来形成一条链。请求在这个链上传递，直到链上的某一个对象决定处理此请求。发出这个请求的客户端并不知道链上的哪一个对象最终处理这个请求，这使得系统可以在不影响客户端的情况下动态地重新组织和分配责任。
+
+创建多个对象，使这些对象形成一条链，并沿着这条链传递请求，直到链上的某一个对象决定处理此请求。
+
+1）接收请求的对象连接成**一条链**，对象之间存在层级关系。
+
+2）这些对象可处理请求，也可传递请求，直到有对象处理该请求。
+
+定义：一个请求沿着一条“链”传递，直到该“链”上的某个处理者处理它为止。
+
+纯责任链模式和不纯的责任链模式
+如果一个类要么承担责任处理请求要么将请求踢给下一个皮球，则被称为纯责任链模式。
+如果一个类承担了一部分责任，还将请求踢给下一个皮球，则被称为不纯的责任链模式。
+
+一般来说，日常开发中不纯的责任链模式用的比较多一点。
+
+![1556187069182](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1556187069182.png)
+
+上图中Handler类的聚合关系给出了具体子类对下家的引用，抽象方法handleRequest()规范了子类处理请求的操作。具体处理者接到请求后，可以选择将请求处理掉，或者将请求传给下家。由于具体处理者持有对下家的引用，因此，如果需要，具体处理者可以访问下家。
+
+举一个简单的例子，部门办活动需要报销。报销处职员可以处理单次`500`元以下的业务，超过500需要和处长联系。而处长只能处理单次`1000`元一下的业务，再高就只能找老大报了。但是老大目前只能处理单次`1500`元以下的业务，再高目前只能拒绝报销了。
+
+```java
+public abstract class Handler {
+    private Handler nextHandler;
+
+    public Handler getNextHandler() {
+        return nextHandler;
+    }
+
+    public void setNextHandler(Handler nextHandler) {
+        this.nextHandler = nextHandler;
+    }
+
+    abstract public String process(String name , double fee);
+}
+
+
+
+class StaffMember extends Handler {
+
+    @Override
+    public String process(String name, double fee) {
+        if (fee <= 500) {
+            return "StaffMember give " + name + " money:" +fee;
+        } else if (getNextHandler() == null) {
+            return "nobody can process it";
+        } else {
+            return  getNextHandler().process(name, fee);
+        }
+    }
+}
+
+class BigMember extends Handler {
+
+    @Override
+    public String process(String name, double fee) {
+        if (fee <= 1000) {
+            return "BigMember give " + name + " money:" +fee;
+        } else if (getNextHandler() == null) {
+            return "nobody can process it";
+        } else  {
+            return getNextHandler().process(name, fee);
+        }
+    }
+}
+
+class Boss extends Handler {
+
+    @Override
+    public String process(String name, double fee) {
+        if (fee <= 1500) {
+            return "Boss give " + name + " money:" +fee;
+        } else if (getNextHandler() == null) {
+            return "nobody can process it";
+        } else  {
+            return getNextHandler().process(name, fee);
+        }
+    }
+}
+
+public class Demo {
+
+    public static void main(String[] args) {
+        StaffMember staffMember = new StaffMember();
+        BigMember bigMember = new BigMember();
+        Boss boss = new Boss();
+
+        staffMember.setNextHandler(bigMember);
+        bigMember.setNextHandler(boss);
+
+        System.out.println( staffMember.process("jack", 400) );
+        System.out.println( staffMember.process("lily", 800) );
+        System.out.println( staffMember.process("dave", 1222) );
+        System.out.println( staffMember.process("king", 4000) );
+
+    }
+}
+```
+
+
+
+还有一种责任链模式的实现方式，如实现一个字符串处理器：我们在处理字符串的时候，需要转换大小写，替换特殊字符等，如果将功能写死的话，后续扩展就比较麻烦，比如要加个功能：在字符串的后面加上特定字符。
+
+实现代码如下：
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public interface Process {
+    String process(String msg);
+}
+
+class LowerProcess implements Process {
+
+    @Override
+    public String process(String msg) {
+        return msg.toLowerCase();
+    }
+}
+
+class FilterProcess implements Process {
+
+    @Override
+    public String process(String msg) {
+        return msg.replace("fuck", "fun");
+    }
+}
+
+class SignProcess implements Process {
+
+    @Override
+    public String process(String msg) {
+        msg = msg + " ,by lester";
+        return msg;
+    }
+}
+
+class ProcessChain {
+    private List<Process> list = new ArrayList<>();
+
+    public ProcessChain addChain(Process process) {
+        list.add(process);
+        return this;
+    }
+
+    public String process(String msg) {
+        String str = msg;
+        for (Process ps : list) {
+            str = ps.process(str); //上一次的输出作为下一次的输入
+        }
+        return str;
+    }
+
+
+    public static void main(String[] args) {
+        ProcessChain chain = new ProcessChain();
+        chain.addChain(new LowerProcess())
+                .addChain(new FilterProcess())
+                .addChain(new SignProcess());
+
+        String msg = chain.process("this is a fuck DAY");
+        System.out.println(msg);
+    }
+}
+```
 
