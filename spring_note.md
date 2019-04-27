@@ -284,9 +284,9 @@ Request 消息的结构,   Request 消息分为3部分，第一部分叫Request 
 
 header和body之间有个**空行**
 
-![1555765251949](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555765251949.png)
+![1555765251949](.\assets\1555765251949.png)
 
-![1556102379632](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1556102379632.png)
+![1556102379632](.\assets\1556102379632.png)
 
 
 
@@ -296,9 +296,9 @@ Response消息的结构, 和Request消息的结构基本一样。 同样也分�
 
 header和body之间也有个空行,  结构如下图
 
-![1555765292985](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555765292985.png)
+![1555765292985](.\assets\1555765292985.png)
 
-![1556102411368](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1556102411368.png)
+![1556102411368](.\assets\1556102411368.png)
 
 
 
@@ -344,8 +344,6 @@ HTTP/1.1中定义了5类状态码， 状态码由三位数字组成，第一个�
 
 
 
-
-
 参考：<http://www.ruanyifeng.com/blog/2016/08/http.html>
 
 <https://www.cnblogs.com/TankXiao/archive/2012/02/13/2342672.html>
@@ -386,13 +384,13 @@ JSON is built on two structures:
 
 An *object* is an unordered set of name/value pairs. An object begins with `{` (left brace) and ends with `}` (right brace). Each name is followed by `:` (colon) and the name/value pairs are separated by  `,` (comma).
 
-![1555766718122](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555766718122.png)
+![1555766718122](.\assets\1555766718122.png)
 
-An *array* is an ordered collection of values. An array begins with `[` (left bracket) and ends with `]` (right bracket). Values are separated by `,` (comma).![1555766739988](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555766739988.png)
+An *array* is an ordered collection of values. An array begins with `[` (left bracket) and ends with `]` (right bracket). Values are separated by `,` (comma).![1555766739988](.\assets\1555766739988.png)
 
 A *value* can be a *string* in double quotes, or a *number*, or `true` or `false` or `null`, or an *object* or an *array*. These structures can be nested.
 
-![1555766798713](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555766798713.png)
+![1555766798713](.\assets\1555766798713.png)
 
 
 
@@ -534,11 +532,11 @@ public abstract class JsonElement {
 
 JsonElement的主要方法：
 
-![1555770704421](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555770704421.png)
+![1555770704421](.\assets\1555770704421.png)
 
 JsonObject的主要方法：
 
-![1555770803978](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1555770803978.png)
+![1555770803978](.\assets\1555770803978.png)
 
 参考：<https://www.liaoxuefeng.com/wiki/001434446689867b27157e896e74d51a89c25cc8b43bdb3000/001434499490767fe5a0e31e17e44b69dcd1196f7ec6fc6000>
 
@@ -675,7 +673,7 @@ RestController使用的效果是将方法**返回的对象**直接在浏览器�
 
 这2个都是用来注解类的，如果@Controller注解的类中某个方法需要返回JSON，XML或自定义mediaType内容到页面，则需要在对应的方法上加上@ResponseBody注解。
 
-![1556172741631](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1556172741631.png)
+![1556172741631](.\assets\1556172741631.png)
 
 As you can see, the *DispatcherServlet* plays the role of the *Front Controller* in the architecture.
 
@@ -1105,6 +1103,16 @@ if (loginResponse.getStatusCode() == HttpStatus.OK) {
 
 这是 Spring Security 提供的一个**安全权限控制框架**，可以根据使用者的需要定制相关的角色身份和身份所具有的权限，完成黑名单操作、拦截无权限的操作。配合 Spring Boot 可以快速开发出一套完善的权限系统。
 
+Spring Security致力于为Java应用提供**认证**和**授权**管理。它是一个强大的，高度自定义的认证和访问控制框架。
+
+两个关键词：Authentication（认证）和 Authorization（授权，也叫访问控制）
+
+认证是验证用户身份的合法性，而授权是控制你可以做什么。
+
+简单地来说，认证就是你是谁，授权就是你可以做什么。
+
+ 
+
 **json** : 与前端交互的数据交换格式，它的特点是可以促进 web 前后端解耦，提升团队的工作效率。 同时也是跟安卓端和 iOS 端交互的工具。
 
 **jwt** (json web token)：用人话讲就是将用户的身份信息（账号名字）、其他信息（不固定，根据需要增加）在用户**登陆时提取出来**，并且通过加密手段加工成**一串密文**，在用户登陆成功时带在返回结果**发送给用户**。以后用户每次请求时均带上这串密文，服务器根据解析这段密文判断用户是否有权限访问相关资源，并返回相应结果。
@@ -1119,6 +1127,20 @@ if (loginResponse.getStatusCode() == HttpStatus.OK) {
 ```
 
 注意一旦这个依赖添加了，如果没有配置的话，请求url时候会被强制跳转到一个内置的login登陆界面。
+
+![1556242446117](.\assets\1556242446117.png)
+
+如图，是一种通用的用户权限模型。一般情况下会有5张表，分别是：用户表，角色表，权限表，用户角色关系表，角色权限对应表。
+
+一般，**资源分配时是基于角色的**（即，**资源访问权限赋给角色，用户通过角色进而拥有权限**）；而访问资源的时候是基于资源权限去进行授权判断的。
+
+Spring Security和Apache Shiro是两个应用比较多的权限管理框架。Spring Security依赖Spring，其功能强大，相对于Shiro而言学习难度稍大一些。
+
+Spring的强大是不言而喻的，可扩展性也很强，强大到用Spring家族的产品只要按照其推荐的做法来就非常非常简单，否则，自己去整合过程可能会很痛苦。
+
+目前，我们项目是基于Spring Boot的，而且Spring Boot的权限管理也是推荐使用Spring Security的，所以再难也是要学习的。
+
+
 
 先用一个登陆控制Demo初步了解；我们将对`/hello`页面进行权限控制，必须是授权用户才能访问。当没有权限的用户访问后，跳转到登录页面。
 
@@ -1319,6 +1341,10 @@ fasle，表示无权限
 
 <http://www.importnew.com/26712.html>
 
+<http://www.spring4all.com/article/428>
+
+
+
 
 
 #### 5 http拦截器与过滤器
@@ -1475,6 +1501,10 @@ WebMVCConfigurerAdapter类被废弃，因为java8引入了接口的默认方法�
 
 <https://www.cnblogs.com/paddix/p/8365558.html>
 
+<https://www.cnblogs.com/cjsblog/p/9152455.html>
+
+
+
 #### 6 spring boot目录
 
 **静态资源目录**
@@ -1491,7 +1521,7 @@ WebMVCConfigurerAdapter类被废弃，因为java8引入了接口的默认方法�
 
 我们现在就在资源文件resources目录下建立如下四个目录：
 
-![1556181584901](C:\Users\geb9wx\AppData\Roaming\Typora\typora-user-images\1556181584901.png)
+![1556181584901](.\assets\1556181584901.png)
 
 注意蓝色条下的**资源文件夹resources**与类路径下的文件夹classpath:/resources是不同的，蓝色条下的resources代表的是该目录下的文件为资源文件，在打包的时候会将该目录下的文件**全部打包到类路径下**，这个名称是可以改的，在pom.xml指定资源目录即可：
 
