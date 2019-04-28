@@ -270,3 +270,83 @@ Unicode 规范定义，每一个文件的最前面分别加入一个表示编码
 
 
 
+### IaaS、PaaS和SaaS的区别
+
+这其实是云计算的三个分层，假设有这么一加技术超一流的公司，根本就不需要别人来提供服务，自己拥有基础设施、应用等等，可以把他们分为三层：**基础设施**（infrastructure）、**平台**（platform）和软件（software）。基础施舍在最末端，平台在中间，软件则在顶层，分别是:
+
+Infrastructure-as-a-Service(IaaS)、
+
+Platform-as-a-Service(PaaS)、
+
+Software-as-a-Service(SaaS)，
+
+而别的一些“层”可以在它们之上继续添加。
+
+基础设施主要包括网络系统（networking）、存储设备（storage）、服务器（servers）、虚拟化技术（virtualization）。
+
+而平台则在基础设施之上，还包括操作系统（OS）、中间件（middleware）以及运行库（runtime）。
+
+最后是软件，则在平台的基础上，还添加了数据（date）与应用（application）。
+
+![Characteristics of different platform models  Product Positioning  laaS —  PaaS -  Infrastructure as a  Platform as a Service  Service  Q) Host  Build  Applications  Applications  Data  Data  Runtime  Runtime  Middleware  Middleware  Virtualization  Virtualization  Storage  Storage  Servers  Servers  Networking  Networking  Restricted O Siemens AG 2018  SIEMENS  SaaS -  Software as a Service  Consume  Applications  Data  Runtime  Middleware  Virtualization  Storage  Servers  Networking  LIE  P rouider ](assets/clip_image001.png)
+
+它们有什么区别呢？ 用做披萨来看IaaS、PaaS和SaaS
+
+IBM 的软件架构师 Albert Barron 曾经使用披萨作为比喻，解释这个问题。David Ng 进一步引申，让它变得更准确易懂。
+
+请设想你是一个餐饮业者，打算做披萨生意。
+
+你可以从头到尾，自己生产披萨，但是这样比较麻烦，需要准备的东西多，因此你决定外包一部分工作，采用他人的服务。你有三个方案。
+
+（1）方案一：IaaS 
+
+他人提供厨房、炉子、煤气，你使用这些**基础设施**，来烤你的披萨。 
+
+（2）方案二：PaaS
+
+除了基础设施，他人还提供披萨饼皮。
+
+你只要把自己的配料洒在饼皮上，让他帮你烤出来就行了。也就是说，你要做的就是设计披萨的味道（海鲜披萨或者鸡肉披萨），他人提供**平台服务**，让你把自己的设计实现。
+
+（3）方案三：SaaS
+
+他人直接做好了披萨，不用你的介入，到手的就是一个成品。你要做的就是把它卖出去，最多再包装一下，印上你自己的 Logo。
+
+**这几种服务是一个层级的关系，越往上，用户需要做的事情就越少。** IaaS对用户来说，需要他搭建平台，设计搭建和部署应用软件，而Paas的话，用户只需要设计和部署应用软件就可以了，而对SaaS来说，用户什么都不需要做，他们已经提供了应用软件，用户直接用就行了。
+
+IaaS也就是基础设施即服务（Infrastructure-as-a-Service），拥有了IaaS，就可以将引荐外包到别的地方去。IaaS公司会提供场外服务器，存储和网络硬件，也可以选择租用。节省了维护成本和办公场地，公司可以在任何时候利用这些硬件来运行其应用。
+
+目前比较知名的IaaS公司有亚马逊、Bluelock、CSC、GoGrid、IBM等。
+
+PaaS即软件即服务（Platform-as-a-Service），某些时候也被叫作中间件。所有的开发都可以在这一层进行，节省时间与资源。PaaS公司可以提供各种开发和分发应用的解决方案，比如虚拟服务器和操作系统等，可以节省硬件上的费用。 
+
+PaaS公司与IaaS公司有许多重叠，除了上面列出的那些之外，还有Google、Microsoft Azure、Force.com、,Heroku、Engine Yard等。
+
+最后则是SaaS，软件即服务（Software-as-a-Service），也是我们目前普通用户接触最多的层面，**在网络上任意一个远程服务器上的应用都是属于SaaS**。比如现在阿里的钉钉、JIBUU以及苹果的iCloud都属于这一类。
+
+假如有一天，这家公司的老板觉得，只是吃顿饺子而已，有必要又是买灶台，又是买蒸屉，何必非要自己做呢？于是这个时候，就要准备寻找一家云服务提供商，那么这家提供商需要有哪些服务呢？
+
+主要提供的云服务也就是云计算的三个分层，IaaS、PaaS和SaaS，就像是饺子店给你提供的三种服务，打包、外卖和去店里面吃。 
+
+
+
+1.直接在configuration中排除 
+configurations {
+​    compile.exclude module: 'commons'
+​    all*.exclude group: 'org.gradle.test.excludes', module: 'reports'
+}
+
+2.在具体的某个dependency中排除
+dependencies {
+​    compile("org.gradle.test.excludes:api:1.0") {
+​        exclude module: 'shared'
+​    }
+
+}
+
+<https://stackoverflow.com/questions/27312491/rest-jax-rs-javax-ws-rs-processingexception/29560463#29560463>
+
+<https://blog.csdn.net/ashencode/article/details/82078308>
+
+
+
