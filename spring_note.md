@@ -1,4 +1,4 @@
-#### 1 HTTP
+## 1 HTTP
 
 HTTP 协议是Hyper Text Transfer Protocol（超文本传输协议）的缩写，是基于 **TCP/IP 协议**的[**应用层协议**](http://www.ruanyifeng.com/blog/2012/05/internet_protocol_suite_part_i.html)。它不涉及数据包（packet）传输，主要规定了客户端和服务器之间的**通信格式**，默认使用80端口。
 
@@ -350,7 +350,7 @@ HTTP/1.1中定义了5类状态码， 状态码由三位数字组成，第一个�
 
 
 
-#### 2 Json
+## 2 Json
 
 JSON是JavaScript Object Notation的缩写，它是一种**轻量级数据交换格式**。
 
@@ -544,7 +544,7 @@ JsonObject的主要方法：
 
 
 
-#### 2.1 Spring注解
+## 2.1 Spring注解
 
 **@RequestMapping**：Every HTTP request in a Spring MVC web app is routed through the DispatcherServlet or Front controller.  This servlet is responsible for routing incoming requests to handler methods of controllers.
 
@@ -697,7 +697,7 @@ RESTful* applications are designed to be service-oriented and return raw data (J
 
 
 
-#### 3 RestTemplate
+## 3 RestTemplate
 
 restTemplate 用来实现HTTP请求，在spring-boot-starter-web中已经有了它的依赖。
 
@@ -1099,7 +1099,7 @@ if (loginResponse.getStatusCode() == HttpStatus.OK) {
 
 
 
-#### 4 Spring Security
+## 4 Spring Security
 
 这是 Spring Security 提供的一个**安全权限控制框架**，可以根据使用者的需要定制相关的角色身份和身份所具有的权限，完成黑名单操作、拦截无权限的操作。配合 Spring Boot 可以快速开发出一套完善的权限系统。
 
@@ -1347,7 +1347,7 @@ fasle，表示无权限
 
 
 
-#### 5 http拦截器与过滤器
+## 5 http拦截器与过滤器
 
 先理解一下AOP的概念，AOP不是一种具体的技术，而是一种编程思想。在面向对象编程的过程中，我们很容易通过继承、多态来解决**纵向**扩展。 但是对于横向的功能，比如，在所有的service方法中开启事务，或者统一记录日志等功能，面向对象的是无法解决的。所以AOP——面向切面编程其实是面向对象编程思想的一个补充。
 
@@ -1505,7 +1505,7 @@ WebMVCConfigurerAdapter类被废弃，因为java8引入了接口的默认方法�
 
 
 
-#### 6 spring boot目录
+## 6 spring boot资源目录
 
 **静态资源目录**
 
@@ -1566,4 +1566,390 @@ addResourceHandlers就是专门处理静态资源的方法，addResourceHandler(
 ```
 http://localhost:8080/img/1.png
 ```
+
+
+
+## gradle学习
+
+Gradle的出现，是技术发展的必然，站在了Ant、maven等**构建工具**的肩膀上，使用了一种强大且具有表达性的基于Groovy的领域特定语言(DSL)，使其拥有易用且灵活的方式去实现定制逻辑、方便扩展，对什么周期有更完全的控制。学习本课程后就能理解，gradle是什么，能干什么，为什么是gradle；并掌握实际使用gradle进行项目构建、测试、打包、发布的能力。Gradle让不可能变得可能，让可能变得简单，让简单变得优雅。
+
+**自动化构建工具**：
+
+项目管理：依赖管理，测试，打包，发布，上传，
+
+机器能干的话，绝不自己动手
+
+Ant:编译、测试、打包
+
+Maven:在Ant基础上提狗了，依赖管理，发布。
+
+Gradle:在Maven的基础上进一步提升，使用groovy语言进行管理，而不是xml，具备更高的灵活性和可扩展性。
+
+gradle是一个开源的**项目自动化构建工具，**建立在ant和maven基础之上，引入了基于groovy的特定领域语言，不再使用xml管理构建脚本。
+
+**gradle**使用准备
+
+1. 检查jdk是否安装， `java -version`
+2. 下载<https://gradle.org/>
+3. 解压到指定目录，添加环境变量 GRADLE_HOME=    把`%GRADLE_HOME%\bin`目录添加到path。
+4. gradle -v  验证是否正确安装
+
+Groovy**语言**
+
+是用于java虚拟机的一种敏捷的动态语言，是一种面向对象语言，也可用作纯粹的脚本语言，代码精简，同时具有闭包和动态语言中的特性。
+
+和Java比较：
+
+1. 完全兼容java语法，在groovy中可以编写java代码，最后也是编译成和java一样的字节码。
+2. 结尾的分号是可选的
+3. 类、方法 默认是public的
+4. 编译器自动给属性添加getter/setter方法，属性也可以直接通过 点号 来获取
+5. 在方法体中，最后一个值会作为返回值，如果方法需要返回值，那么最后的return可以省略
+6.  == 等同于 equal方法，不会有空指针异常
+
+高效特性：
+
+1 assert语句，可以在任意位置使用
+
+2 可选类型定义，弱变量类型
+
+3 方法参数的括号是可选的，
+
+4 字符串，有3种表达方式，单引号：是表示字符串常量，双引号：可以替换占位符，3个单引号：可以换行
+
+5 集合API ： list map
+
+6 闭包
+
+
+
+代码**Demo**
+
+IDEA 新建一个gradle的java工程，设置gradle 使用本地指定路径：Gradle_home那个。
+
+tools -> groovy console, 打开groovy编辑框。
+
+可以直接编辑java代码，也可以按照groovy语法改造java代码，没有编译报错
+
+```groovy
+println 'hi'
+class ProjectVersion {
+    private int major;
+    private int minor //不加分号
+
+    ProjectVersion(int major, int minor) {
+        this.major = major
+        this.minor = minor
+    }
+
+    int getMajor() {
+        return major
+    }
+
+    int getMinor() {
+        minor //不加 return
+    }
+
+    void setMajor(int major) {
+        this.major = major
+    }
+}
+
+ProjectVersion projectVersion = new ProjectVersion(8,1)
+println projectVersion.major
+projectVersion.minor = 3
+println projectVersion.getMinor()
+
+projectVersion.setMajor 99 //可以省略括号
+println projectVersion.major
+
+ProjectVersion v2 = null
+println v2 == projectVersion //并没有报出空指针异常
+```
+
+![1556609004617](assets/1556609004617.png)
+
+点击红色部分执行代码，输出：
+
+```
+hi
+8
+3
+99
+false
+```
+
+
+
+闭包：简单来说就是一个代码块，跟方法一样可以有参数也可以没有参数，闭包可以被赋值给一个变量，也可以当作参数传递给方法，之后像普通方法一样调用。
+
+```groovy
+//高效特性
+
+//1 可选的类型定义
+def version = 1
+def des = 'hi lester'
+
+// 括号可选
+println des
+
+//2 assert
+assert version == 1
+
+// 字符串
+def s1 = 'imooc' //常量
+def s2 = "gradle vesion is ${version}" //可插入变量
+def s3 = '''my
+name
+is zht'''
+
+println s1
+println s2
+println s3
+
+//集合
+def tools = ['ant', 'maven']
+tools << 'gradle' //添加一个元素
+assert  tools.size() == 3
+assert tools.getClass() == ArrayList
+
+def buildYears = ['ant':2000, 'maven':2004]
+buildYears.gradle = 2009 //添加元素
+println buildYears.ant
+println buildYears['gradle']
+println buildYears.getClass()
+
+//闭包
+//定义一个包含参数的闭包
+//  -> 换行后是方法体
+def c1 = {
+    v ->
+        println v
+}
+
+//定义一个不包含参数的闭包
+def c2 = {
+    println 'hello'
+}
+
+//定义一个包含闭包参数的方法,注意不要导入 java中的Closure类，而要使用groovy自带的Closure类
+def method1(Closure closure) {
+    closure("test param") //这个闭包可以传入参数
+    println 'm1'
+}
+
+def method2(Closure closure) {
+    println 'm2 start'
+    closure()
+    println 'm2 end'
+}
+
+method1 (c1); //传入闭包当作参数
+method2(c2)
+```
+
+输出
+
+```
+hi lester
+imooc
+gradle vesion is 1
+my
+name
+is zht
+2000
+2009
+class java.util.LinkedHashMap
+test param
+m1
+m2 start
+hello
+m2 end
+```
+
+
+
+常规项目的build.gralde文件
+
+```groovy
+plugins { //plugins是一个方法，参数是闭包，后面的方法体就是一个闭包
+    id 'java' // id是一个方法， 'java'是传入方法的参数
+}
+
+group 'com.zht' //实际是 setGroup(Object var1) 对变量赋值，设置值
+version '1.0-SNAPSHOT' //void setVersion(Object var1);
+
+sourceCompatibility = 1.8 // setSourceCompatibility(Object value),就是对变量赋值
+
+repositories { //repositories是一个方法，参数是闭包
+    mavenCentral() //设置代码仓库为mavenCenter
+}
+
+dependencies {//dependencies是一个带闭包参数的方法
+    testCompile group: 'junit', name: 'junit', version: '4.12' //testCompile是一个方法，后面3个是方法传入的参数，或者是一个map?
+}
+```
+
+这里使用了一个 java 的插件，这会引入一些常用的task. 找到IDEA右侧Gradle,可以看到如下
+
+![1556612479631](assets/1556612479631.png)
+
+打jar包例子，在工程中加入2个类：
+
+```java
+package com.lester;
+import java.util.Scanner;
+public class App {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("input name:");
+        String name = scanner.nextLine();
+        TodoItem item = new TodoItem(name);
+        item.setHasDone(true);
+        System.out.println(item);
+    }
+}
+
+package com.lester;
+
+public class TodoItem {
+    private String name;
+    private boolean hasDone;
+
+    public TodoItem(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public boolean isHasDone() {
+        return hasDone;
+    }
+
+    public void setHasDone(boolean hasDone) {
+        this.hasDone = hasDone;
+    }
+
+    @Override
+    public String toString() {
+        return "TodoItem{" +
+                "name='" + name + '\'' +
+                ", hasDone=" + hasDone +
+                '}';
+    }
+}
+```
+
+点击task中的jar, 生成一个jar包，路径在当前工程目录下 ./build/libs/下，在改目录下执行jar包中的方法：
+
+```
+java -cp gradle-demo-1.0-SNAPSHOT.jar com.lester.App
+```
+
+会执行App类中的main方法。
+
+cp是classpath的缩写，后面接class文件，意思是将指定的class类文件添加到classpath中。多个class文件使用：号隔开。
+
+**打war包**
+
+首先在build.gradle中添加war插件：
+
+```
+plugins {
+    id 'java'
+    id 'war'
+}
+```
+
+之后会多出一个war的task.
+
+然后添加java web相关的文件，结构如下：
+
+![1556619521797](assets/1556619521797.png)
+
+点击war task, 生成一个war包。然后把这个war包放到tomcat目录：`apache-tomcat-7.0.92\webapps\`下，tomcat启动后会把war自动解压，解压后的目录结构如下：
+
+![1556619761822](assets/1556619761822.png)
+
+resources目录下的配置文件会被打包到classes文件夹下，即class文件的根目录。
+
+**构建脚本**
+
+gradle构建中2个基本概念是project项目，任务task，每个构建至少包含一个项目，项目中包含一个或多个任务，在多项目构建中，一个项目可以依赖其他项目，依赖可以传递，并且任务也可以形成一个依赖关系图来确保他们的执行顺序。
+
+Project：一个项目代表一个正在构建的组件（比如一个jar文件），当构建启动后，gradle会基于build.gradle实例化一个`org.gradle.api.Project`类，并且通过project变量使其隐式可用。
+
+几个属性: group、name、version，这几个相当于项目的坐标，确定其唯一性。
+
+一般artifactId是指的name
+
+主要方法：apply： 配置插件  dependencies管理依赖  respositories配置代码仓库   task声明任务
+
+属性的其他配置方式：ext 、gradle.properties
+
+**任务task**
+
+任务对应 `org.gradle.api.Task`主要包含任务动作和任务依赖，任务动作定义了一个最小的工作单元，可以定义依赖于其他任务、动作序列和执行条件。
+
+dependsOn定义任务依赖
+
+doFirst   doLast(等效于 << )，可以定义任务执行前、执行后的动作，并且可以多次调用。
+
+一般我们引用的插件是带了很多任务，可以方便我们进行常规操作
+
+定义一个最简单的task，如下：
+
+```groovy
+task myTask {
+    println 'a task'
+}
+```
+
+![1556621217447](assets/1556621217447.png)
+
+然后刷新gradle后，在右边找到myTask的条目，点击即可执行，或者命令行输入 gradle myTask
+
+task有自己的生命周期：初始化---配置期---执行期
+
+其实上面代码就是在配置阶段而已，配置阶段的代码只要在执行任何task都会跟着执行，如果我们希望不被执行的话，就只能放到执行阶段了，最直接的方法就是加到doLast、doFirst里。
+
+```groovy
+task myTask {
+    println 'a task'
+    doFirst {
+        println 'do first'
+    }
+    
+    doLast {
+        println 'do last'
+    }
+}
+```
+
+输出如下：
+
+```
+> Configure project :
+a task
+
+> Task :myTask
+do first
+do last
+```
+
+另外，doLast动作可以简化如下形式：
+
+```java
+task myTask << {
+    println 'a task, last'
+}
+```
+
+
 
