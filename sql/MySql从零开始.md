@@ -33,8 +33,16 @@
 
    登录制定主机的mysql:
 
-   ```
+   ```sh
    mysql -h 主机名 -u 用户名 -p ；如果没有密码，则不需要 -p
+   
+   #The following steps will describe creating a new database named appdb and granting the appuser full access to the new database. Adjust the hostname from which the user will be connecting and password as necessary.
+   mysql> CREATE DATABASE appdb;
+   mysql> GRANT ALL ON appdb.* TO 'appuser'@'localhost' IDENTIFIED BY 'password';
+   mysql> QUIT;
+   
+   # localhost是远程连接的主机IP，运行任意主机的话使用 % ，特定IP地址的话就限定IP地址了 
+   GRANT ALL ON zhtdb.* TO 'zht'@'%' IDENTIFIED BY 'zht';
    ```
 
    或者 `mysql -D 所选择的数据库名 -h 主机名 -u 用户名 -p`

@@ -432,16 +432,18 @@ eg：”车”为一个抽象概念，在现实中并无法直接用来定义对
         
     }
 
-泛型方法定义,<>定义在修饰符后，返回值前：
-​    
-​    public <T> void fun(T t) {
-​        
-​    }
-​    
+泛型方法定义,**<>定义在修饰符后，返回值前**：
+
+```
+   
+   public <T> void fun(T t) {          
+   }
+    
     public static <T> T  fun2() {
         T t = null;
         return t;
     }
+```
 
 对定义为 `class A<T> {……}` 的类，如果定义时 `A a = new A();`
 则T代表的类型使用Object来替代。
@@ -1030,9 +1032,12 @@ notifyAll(): Wakes up all threads that are waiting on this object's monitor.
     }
 
 1. 要在某个对象上执行wait，notify，先必须锁定该对象
-2. Use the same object for calling wait() and notify() method; every object has its own lock so calling wait() on object A and notify() on object B will not make any sense.
+
+2. Use the **same object** for calling wait() and notify() method; every object has its own lock so calling wait() on object A and notify() on object B will not make any sense.
+
 3. Use notifyAll instead of notify if you expect that more than one thread will be waiting for a lock.
-4. Always call the wait() method in a loop because if multiple threads are waiting for a lock and one of them got the lock and reset the condition, then the other threads need to check the condition after they wake up to see whether they need to wait again or can start processing.
+
+4. Always call the wait() method in a **loop** because if multiple threads are waiting for a lock and one of them got the lock and reset the condition, then the other threads need to check the condition after they wake up to see whether they need to wait again or can start processing.
 
         public static void main(String[] args) throws InterruptedException {
             Object obj = new Object();
@@ -1049,6 +1054,7 @@ notifyAll(): Wakes up all threads that are waiting on this object's monitor.
             }
         }
     执行以上代码，会抛出java.lang.IllegalMonitorStateException的异常。
+
 
 **注意对区块内的局部变量，只能使用final修饰符，不能使用static或者volatile.**
 
@@ -1095,6 +1101,294 @@ http://www.cnblogs.com/chenssy/p/3390871.html
 
 ![编译不通过.png](assets/135874-ca7dd06eec6c455a.png)
 
+### 生产者消费者
+
+生产者和消费者问题是线程模型中的经典问题：生产者和消费者在同一时间段内共用同一个存储空间，生产者往存储空间中添加产品，消费者从存储空间中取走产品，当存储空间为空时，消费者阻塞，当存储空间满时，生产者阻塞。
+
+![1557475920828](assets/1557475920828.png)
+
+所以需要对缓冲区进行线程并发同步处理。
+
+```java
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ProductConsumerDemo {
+
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		Resource resource1 = new Resource1();
+		Resource resource2 = new Resource2();
+		Resource resource3 = new Resource3();
+		
+		Product product = new Product(resource3, 20);
+		Consumer consumer = new Consumer(resource3, 30);
+		
+		new Thread(product).start();
+		new Thread(product).start();
+		new Thread(product).start();
+		new Thread(consumer).start();
+		new Thread(consumer).start();
+	}
+
+}
+
+interface Resource {
+	void put(String name);
+	void get();
+}
+
+
+/**
+ * 生产者，传入资源和操作次数
+ * @author Administrator
+ *
+ */
+class Product implements Runnable {
+	Resource mResource;
+	int times ;
+	public Product(Resource resource, int times) {
+		// TODO Auto-generated constructor stub
+		mResource = resource;
+		this.times = times;
+	}
+	public void run() {
+		for (int i=0; i<10; i++) {
+			mResource.put("bread"+i);
+			try {
+				Thread.sleep(3);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+}
+
+/**
+ * 消费者，传入资源和操作次数
+ * @author Administrator
+ *
+ */
+class Consumer implements Runnable {
+	Resource mResource;
+	int times;
+	public Consumer(Resource resource, int times) {
+		// TODO Auto-generated constructor stub
+		mResource = resource;
+		this.times = times;
+	}
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		for (int i=0; i<times; i++) {
+			mResource.get();
+			try {
+				Thread.sleep(3);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+}
+
+
+/**
+ * 资源类型：使用synchronized方法，每次生产一个，消费一个。
+ * @author Administrator
+ *
+ */
+class Resource1 implements Resource {
+	private String name;
+	private int count = 1;
+	private boolean emptyFlag = true;
+	
+	public synchronized void put(String n) {
+		
+		while (emptyFlag == false) { //不为空就等待
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		name = n+count;
+		count++;
+		System.out.println(Thread.currentThread().getName()+"--put---" + name);
+		
+		emptyFlag = false;
+		notifyAll(); //已经放入，通知消费
+	}
+	
+	public synchronized void get() {
+		while (emptyFlag == true) {
+			try {
+				wait();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		System.out.println(Thread.currentThread().getName()+"--get---" + name);
+		
+		emptyFlag = true;
+		notifyAll();
+	}
+}
+
+/**
+ * 资源类型：使用ReentrantLock方法，每次生产一个，消费一个。
+ * @author Administrator
+ *
+ */
+class Resource2 implements Resource{
+	private String name;
+	private int count = 1;
+	private boolean emptyFlag = true;
+	
+	private Lock lock = new ReentrantLock();
+	private Condition consumerCdt = lock.newCondition();
+	private Condition productCdt = lock.newCondition();
+	
+	
+	@Override
+	public void put(String n) {
+		
+		lock.lock();
+		
+		try {
+			while (emptyFlag == false) { //不为空就等待
+				try {
+					productCdt.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			name = n+count;
+			count++;
+			System.out.println(Thread.currentThread().getName()+"--put---" + name);
+			
+			emptyFlag = false;
+
+			consumerCdt.signalAll(); //通知消费者可以消费了
+		} finally {
+			lock.unlock();
+		}
+		
+		
+	}
+	
+	@Override
+	public void get() {
+		lock.lock();
+		
+		try {
+			while (emptyFlag == true) {
+				try {
+					consumerCdt.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			System.out.println(Thread.currentThread().getName()+"--get---" + name);
+			
+			emptyFlag = true;
+			productCdt.signalAll();
+		} finally {
+			// TODO: handle exception
+			lock.unlock();
+		}
+		
+		
+	}
+}
+
+/**
+ * 资源类型：使用ReentrantLock方法，可容纳多个资源。
+ * @author Administrator
+ *
+ */
+class Resource3 implements Resource{
+	private String name;
+	private boolean emptyFlag = true;
+	
+	private Lock lock = new ReentrantLock();
+	private Condition consumerCdt = lock.newCondition();
+	private Condition productCdt = lock.newCondition();
+	
+	String[] table = new String[20];
+	int tableId, putId, getId;
+	@Override
+	public void put(String n) {
+		
+		lock.lock();
+		
+		try {
+			while (tableId >= table.length - 1) { //满了就等待
+				try {
+					productCdt.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			tableId++;//第0个下标不放东西
+			table[tableId] = new String(n);
+			System.out.println(Thread.currentThread().getName()+"--put---" + table[tableId] + " tableId:" +tableId);
+			
+
+			emptyFlag = false;
+
+			consumerCdt.signalAll(); //通知消费者可以消费了
+		} finally {
+			lock.unlock();
+		}
+		
+		
+	}
+	
+	@Override
+	public void get() {
+		lock.lock();
+		
+		try {
+			while (tableId == 0) {//第0个不取
+				try {
+					consumerCdt.await();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			System.out.println(Thread.currentThread().getName()+"--get---" + table[tableId] + " tableId:" +tableId);
+			tableId--;
+
+
+			productCdt.signalAll();
+		} finally {
+			// TODO: handle exception
+			lock.unlock();
+		}
+		
+		
+	}
+}
+```
+
+
+
 ### 反射和动态代理
 
 
@@ -1107,5 +1401,280 @@ http://www.cnblogs.com/chenssy/p/3390871.html
 
 ### 线程相关
 
+
+
 ### 锁相关
+
+
+
+### JVM内存
+
+对于 Java 程序员来说，在虚拟机自动内存管理机制下，不再需要像C/C++程序开发程序员这样为内一个 new 操作去写对应的 delete/free 操作，不容易出现内存泄漏和内存溢出问题。正是因为 Java 程序员把内存控制权利交给 Java 虚拟机，一旦出现内存泄漏和溢出方面的问题，如果不了解虚拟机是怎样使用内存的，那么排查错误将会是一个非常艰巨的任务。
+
+**运行时数据区域**
+
+Java 虚拟机在执行 Java 程序的过程中会把它管理的内存划分成若干个不同的数据区域。JDK. 1.8 和之前的版本略有不同，下面会介绍到。
+
+![1557025864061](assets/1557025864061.png)
+
+![1557025916576](assets/1557025916576.png)
+
+**线程私有的：**
+
+•程序计数器
+
+•虚拟机栈
+
+•本地方法栈
+
+**线程共享的：**
+
+•堆
+
+•方法区
+
+•直接内存(非运行时数据区的一部分)
+
+
+
+2.1 **程序计数器** Program Counter Register
+
+程序计数器是一块较小的内存空间，可以看作是当前线程所执行的**字节码的行号指示器**。字节码解释器工作时通过**改变**这个**计数器的值**来**选取下一条**需要执行的**字节码指令**，分支、循环、跳转、异常处理、线程恢复等功能都需要依赖这个计数器来完。
+
+另外，为了线程切换后能恢复到正确的执行位置，每条线程都需要有一个独立的程序计数器，各线程之间计数器互不影响，独立存储，我们称这类内存区域为“线程私有”的内存。
+
+**从上面的介绍中我们知道程序计数器主要有两个作用：**
+
+•字节码解释器通过改变程序计数器来依次读取指令，从而实现**代码的流程控制**，如：顺序执行、选择、循环、异常处理。
+
+•在多线程的情况下，程序计数器用于记录当前线程执行的位置，从而当**线程被切换**回来的时候能够知道该线程上次运行到哪儿了。
+
+注意：程序计数器是唯一一个不会出现 OutOfMemoryError 的内存区域，它的生命周期随着线程的创建而创建，随着线程的结束而死亡。
+
+2.2 Java **虚拟机栈**
+
+与程序计数器一样，Java虚拟机栈也是线程私有的，它的生命周期和线程相同，描述的是 **Java 方法执行的内存模型**，每次方法调用的数据都是通过栈传递的。
+
+Java 内存可以粗糙的区分为堆内存（Heap）和栈内存(Stack), 其中栈就是现在说的虚拟机栈，或者说是虚拟机栈中**局部变量表**部分。 （实际上，Java虚拟机栈是由一个个栈帧组成，而每个栈帧中都拥有：局部变量表、操作数栈、动态链接、方法出口信息。）
+
+**局部变量表主要存放了编译器可知的各种数据类型**（boolean、byte、char、short、int、float、long、double）、**对象引用**（reference类型，它不同于对象本身，可能是一个指向对象起始地址的引用指针，也可能是指向一个代表对象的句柄或其他与此对象相关的位置）。
+
+Java 虚拟机栈会出现两种异常：StackOverFlowError 和 OutOfMemoryError。
+
+•**StackOverFlowError：** 若Java虚拟机栈的内存大小不允许动态扩展，那么当线程请求栈的深度**超过**当前Java虚拟机栈的**最大深度**的时候，就抛出StackOverFlowError异常。
+
+•**OutOfMemoryError：** 若 Java 虚拟机栈的内存大小允许动态扩展，且当线程请求栈时内存用完了，无法再动态扩展了，此时抛出OutOfMemoryError异常。
+
+Java 虚拟机栈也是线程私有的，每个线程都有各自的Java虚拟机栈，而且随着线程的创建而创建，随着线程的死亡而死亡。
+
+扩展：那么方法/函数如何调用？
+
+Java 栈可用类比数据结构中栈，Java 栈中保存的主要内容是**栈帧**，**每一次函数调用都会有一个对应的栈帧被压入Java栈，每一个函数调用结束后，都会有一个栈帧被弹出。**
+
+Java方法有两种返回方式：
+
+•return 语句。
+
+•抛出异常。
+
+不管哪种返回方式都会导致栈帧被弹出。
+
+2.3 **本地方法栈**
+
+和虚拟机栈所发挥的作用非常相似，区别是： 虚拟机栈为虚拟机执行 Java 方法 （也就是字节码）服务，而本地方法栈则为虚拟机使用到的 **Native 方法服务**。 在 HotSpot 虚拟机中和 Java 虚拟机栈合二为一。
+
+本地方法被执行的时候，在本地方法栈也会创建一个栈帧，用于存放该本地方法的局部变量表、操作数栈、动态链接、出口信息。
+
+方法执行完毕后相应的栈帧也会出栈并释放内存空间，也会出现 StackOverFlowError 和 OutOfMemoryError 两种异常。
+
+**2.4 堆**
+
+Java 虚拟机所管理的**内存中最大的一块**，Java 堆是所有线程共享的一块内存区域，在虚拟机启动时创建。此内存区域的**唯一目的就是存放对象实例**，几乎所有的**对象实例**以及**数组**都在这里分配内存。
+
+Java 堆是垃圾收集器管理的主要区域，因此也被称作GC堆（Garbage Collected Heap）.从垃圾回收的角度，由于现在收集器基本都采用**分代垃圾收集算法**，所以Java堆还可以细分为：新生代和老年代：再细致一点有：Eden空间、From Survivor、To Survivor空间等。**进一步划分的目的是更好地回收内存，或者更快地分配内存。**
+
+![1557026554869](assets/1557026554869.png)
+
+上图所示的 eden区、s0区、s1区都属于新生代，tentired 区属于老年代。大部分情况，对象都会首先在 Eden 区域分配，在一次新生代垃圾回收后，如果对象还存活，则会进入 s0 或者 s1，并且对象的年龄还会加 1(Eden区
+
+---> Survivor 区后对象的初始年龄变为1)，当它的年龄增加到一定程度（默认为15岁），就会被晋升到老年代中。对象晋升到老年代的年龄阈值，可以通过参数 `-XX:MaxTenuringThreshold` 来设置。
+
+2.5 **方法区**
+
+方法区与 Java 堆一样，是各个线程共享的内存区域，它用于存储已被虚拟机加载的**类信息、常量、静态变量**、**即时编译器编译后的代码**等数据。虽然Java虚拟机规范把方法区描述为堆的一个逻辑部分，但是它却有一个别名叫做 Non-Heap（非堆），目的应该是与 Java 堆区分开来。
+
+HotSpot 虚拟机中方法区也常被称为 **“永久代”**，本质上两者并不等价。仅仅是因为 HotSpot 虚拟机设计团队用永久代来实现方法区而已，这样 HotSpot 虚拟机的垃圾收集器就可以像管理 Java 堆一样管理这部分内存了。但是这并不是一个好主意，因为这样更容易遇到内存溢出问题。
+
+**相对而言，垃圾收集行为在这个区域是比较少出现的，但并非数据进入方法区后就“永久存在”了。**
+
+JDK 1.8 的时候，方法区被彻底移除了（JDK1.7就已经开始了），取而代之是**元空间**，元空间使用的是直接内存。
+
+我们可以使用参数： `-XX:MetaspaceSize` 来指定元数据区的大小。与永久区很大的不同就是，如果不指定大小的话，随着更多类的创建，虚拟机会耗尽所有可用的系统内存。
+
+2.6 **运行时常量池**
+
+运行时常量池是方法区的一部分。Class 文件中除了有类的版本、字段、方法、接口等描述信息外，还有常量池信息（用于存放编译期生成的各种字面量和符号引用）
+
+既然运行时常量池时方法区的一部分，自然受到方法区内存的限制，当常量池无法再申请到内存时会抛出 OutOfMemoryError 异常。
+
+JDK1.7及之后版本的 JVM 已经将运行时常量池从方法区中移了出来，在 **Java 堆**（Heap）中开辟了一块区域存放运行时常量池。
+
+![1557027162672](assets/1557027162672.png)
+
+
+
+
+
+2.7 **直接内存**
+
+直接内存并不是虚拟机运行时数据区的一部分，也**不是虚拟机规范中定义的内存区域**，但是这部分内存也被频繁地使用。而且也可能导致 OutOfMemoryError 异常出现。
+
+JDK1.4 中新加入的 **NIO(New Input/Output) 类**，引入了一种基于**通道（Channel）** 与**缓存区（Buffer）** 的 I/O 方式，它可以直接使用 Native 函数库直接分配堆外内存，然后通过一个存储在 Java 堆中的 DirectByteBuffer 对象作为这块内存的引用进行操作。这样就能在一些场景中显著提高性能，因为**避免了在 Java 堆和 Native 堆之间来回复制数据**。
+
+本机直接内存的分配不会收到 Java 堆的限制，但是，既然是内存就会受到本机总内存大小以及处理器寻址空间的限制。
+
+Java应用程序执行时会启动一个Java进程，这个进程的用户地址空间可以被分成两份：JVM数据区 + direct memory。
+
+通俗的说，JVM数据区就是Java代码可以直接操作的那部分内存，由heap/stack/pc/method area等组成，GC也工作在这一片区域里。direct memory则是额外划分出来的一段内存区域，无法用Java代码直接操作，GC无法直接控制direct memory，全靠手工维护。
+
+这些direct memory，其实就跟一般的c语言编程里一样，是直接用malloc方法申请的。
+
+JVM会将malloc方法的返回值（申请到的内存空间的首地址）转换成long类型的address变量，然后返还给Java应用程序。
+
+Java应用程序在需要操作direct memory的时候，会调用native方法将address传给JVM，然后JVM就能对这块内存为所欲为了。也就是说，跑在JVM内部的Java代码无法直接操作direct memory里的数据，需要经过Unsafe带来的中间层，而这必然也会带来一定的开销，所以操作direct memory比heap memory要慢一些。
+
+三 HotSpot **虚拟机对象探秘**
+
+通过上面的介绍我们大概知道了虚拟机的内存情况，下面我们来详细的了解一下 HotSpot 虚拟机在 Java 堆中对象分配、布局和访问的全过程。
+
+3.1 **对象的创建**
+
+下图便是 Java 对象的创建过程，我建议最好是能默写出来，并且要掌握每一步在做什么。
+
+类的加载检查 ---> 分配内存 ---> 初始化零值 --->  设置对象头  ---> 执行init方法
+
+**①类加载检查：** 虚拟机遇到一条 new 指令时，首先将去检查这个指令的参数是否能在常量池中定位到这个类的符号引用，并且检查这个符号引用代表的类是否已被加载过、解析和初始化过。如果没有，那必须先执行相应的类加载过程。
+
+**②分配内存：** 在**类加载检查**通过后，接下来虚拟机将为新生对象**分配内存**。对象所需的内存大小在类加载完成后便可确定，为对象分配空间的任务等同于把一块确定大小的内存从 Java 堆中划分出来。分配方式有 **“指针碰撞”** 和 **“空闲列表”** 两种，选择那种分配方式由 Java 堆是否规整决定，而Java堆是否规整又由所采用的垃圾收集器是否带有压缩整理功能决定。
+
+内存分配的两种方式：（补充内容，需要掌握）
+
+选择以上两种方式中的哪一种，取决于 Java 堆内存是否规整。而 Java 堆内存是否规整，取决于 GC 收集器的算法是"标记-清除"，还是"标记-整理"（也称作"标记-压缩"），值得注意的是，复制算法内存也是规整的
+
+**内存分配并发问题（补充内容，需要掌握）**
+
+在创建对象的时候有一个很重要的问题，就是线程安全，因为在实际开发过程中，创建对象是很频繁的事情，作为虚拟机来说，必须要保证线程是安全的，通常来讲，虚拟机采用两种方式来保证线程安全：
+
+•**CAS+失败重试：** CAS 是乐观锁的一种实现方式。所谓乐观锁就是，每次不加锁而是假设没有冲突而去完成某项操作，如果因为冲突失败就重试，直到成功为止。**虚拟机采用 CAS 配上失败重试的方式保证更新操作的原子性。**•**TLAB：** 为每一个线程预先在Eden区分配一块儿内存，JVM在给线程中的对象分配内存时，首先在TLAB分配，当对象大于TLAB中的剩余内存或TLAB的内存已用尽时，再采用上述的CAS进行内存分配
+
+**③初始化零值：** 内存分配完成后，虚拟机需要将分配到的内存空间都初始化为零值（不包括对象头），这一步操作保证了对象的实例字段在 Java 代码中可以不赋初始值就直接使用，程序能访问到这些字段的数据类型所对应的零值。
+
+**④设置对象头：** 初始化零值完成之后，**虚拟机要对对象进行必要的设置**，例如这个对象是那个类的实例、如何才能找到类的元数据信息、对象的哈希吗、对象的 GC 分代年龄等信息。 **这些信息存放在对象头中。** 另外，根据虚拟机当前运行状态的不同，如是否启用偏向锁等，对象头会有不同的设置方式。
+
+**⑤执行 init 方法：** 在上面工作都完成之后，从虚拟机的视角来看，一个新的对象已经产生了，但从 Java 程序的视角来看，对象创建才刚开始，`<init>` 方法还没有执行，所有的字段都还为零。所以一般来说，执行 new 指令之后会接着执行 `<init>` 方法，**把对象按照程序员的意愿进行初始化**，这样一个真正可用的对象才算完全产生出来。
+
+3.2 **对象的内存布局**
+
+在 Hotspot 虚拟机中，对象在内存中的布局可以分为3块区域：**对象头**、**实例数据**和**对齐填充**。
+
+**Hotspot虚拟机的对象头包括两部分信息**，**第一部分用于存储对象自身的自身运行时数据**（哈希码、GC分代年龄、锁状态标志等等），**另一部分是类型指针**，即对象指向它的类元数据的指针，虚拟机通过这个指针来确定这个对象是那个类的实例。
+
+**实例数据部分是对象真正存储的有效信息**，也是在程序中所定义的各种类型的字段内容。
+
+对齐填充部分不是必然存在的，也没有什么特别的含义，仅仅起**占位作用**。 因为Hotspot虚拟机的自动内存管理系统要求对象起始地址必须是**8字节**的整数倍，换句话说就是对象的大小必须是8字节的整数倍。而对象头部分正好是8字节的倍数（1倍或2倍），因此，当对象实例数据部分没有对齐时，就需要通过对齐填充来补全。
+
+3.3 **对象的访问定位**
+
+建立对象就是为了使用对象，我们的Java程序通过**栈上的 reference 数据来操作堆上的具体对象**。对象的访问方式有虚拟机实现而定，目前主流的访问方式有**①使用句柄**和**②直接指针**两种：
+
+•**句柄：** 如果使用句柄的话，那么Java堆中将会划分出一块内存来作为句柄池，reference 中存储的就是对象的句柄地址，而句柄中包含了对象实例数据与类型数据各自的具体地址信息；
+
+![1557035392636](assets/1557035392636.png)
+
+**直接指针**：如果使用直接指针访问，那么 Java 堆对象的布局中就必须考虑如何放置访问类型数据的相关信息，而reference 中存储的直接就是对象的地址。
+
+![1557035533081](assets/1557035533081.png)
+
+这两种对象访问方式各有优势。使用句柄来访问的最大好处是 reference 中存储的是**稳定的句柄地址**，在对象被移动时只会改变句柄中的实例数据指针，而 reference 本身不需要修改。使用直接指针访问方式最大的好处就是**速度快**，它节省了一次指针定位的时间开销。
+
+
+
+String **类和常量池**
+
+1 String 对象的两种创建方式：
+
+```
+     String str1 = "abcd";     
+     String str2 = new String("abcd");     
+     System.out.println(str1==str2);//false
+     
+     
+     String str1 = "str";
+     String str2 = "ing";
+
+	 String str3 = "str" + "ing";//常量池中的对象
+	 String str4 = str1 + str2; //在堆上创建的新的对象      
+	 String str5 = "string";//常量池中的对象
+```
+
+这两种不同的创建方法是有差别的，第一种方式是在常量池中拿对象，第二种方式是直接在堆内存空间创建一个新的对象。
+
+记住：只要使用new方法，便需要创建新的对象。
+
+**2 String 类型的常量池比较特殊。它的主要使用方法有两种：**
+
+•直接使用双引号声明出来的 String 对象会直接存储在常量池中。
+
+•如果不是用双引号声明的 String 对象，可以使用 String 提供的 intern 方法。String.intern() 是一个 Native 方法，它的作用是：如果运行时常量池中已经包含一个等于此 String 对象内容的字符串，则返回**常量池**中该字符串的**引用**；如果没有，则在常量池中创建与此 String 内容相同的字符串，并返回常量池中创建的字符串的引用。
+
+
+
+8 **种基本类型的包装类和常量池**   
+
+Java 基本类型的包装类的大部分都实现了常量池技术，即Byte,Short,Integer,Long, Character,Boolean；这5种包装类默认创建了数值[-128，127]的相应类型的**缓存数据**，但是超出此范围仍然会去创建新的对象。
+
+•两种浮点数类型的包装类 Float,Double 并没有实现常量池技术。
+
+```
+        Integer i1 = 33;        
+        Integer i2 = 33;        
+        System.out.println(i1 == i2);// 输出true        
+        
+        Integer i11 = 333;        
+        Integer i22 = 333;        
+        System.out.println(i11 == i22);// 输出false  
+        
+        Double i3 = 1.2;        
+        Double i4 = 1.2;        
+        System.out.println(i3 == i4);// 输出false
+```
+
+**Integer 缓存源代码：**
+
+```
+/***此方法将始终缓存-128到127（包括端点）范围内的值，并可以缓存此范围之外的其他值。*/    
+public static Integer valueOf(int i) {        
+    if (i >= IntegerCache.low && i <= IntegerCache.high)            
+        return IntegerCache.cache[i + (-IntegerCache.low)];        
+    return new Integer(i);    
+}
+```
+
+**应用场景：**
+
+•Integer i1=40；Java 在编译的时候会直接将代码封装成Integer i1=Integer.valueOf(40);，从而使用常量池中的对象。
+
+•Integer i1 = new Integer(40);这种情况下会创建新的对象。
+
+
+
+参考：
+
+<https://mp.weixin.qq.com/s/61CYMWKABzLTb2YIvSWRkw>
+
+<https://www.cnblogs.com/stevenczp/p/7506280.html>
+
+
+
+
 

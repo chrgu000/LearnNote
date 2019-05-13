@@ -1683,6 +1683,8 @@ false
 
 闭包：简单来说就是一个代码块，跟方法一样可以有参数也可以没有参数，闭包可以被赋值给一个变量，也可以当作参数传递给方法，之后像普通方法一样调用。
 
+类似于java中的函数接口，可以直接接收方法作为参数。
+
 ```groovy
 //高效特性
 
@@ -1943,7 +1945,7 @@ do first
 do last
 ```
 
-另外，doLast动作可以简化如下形式：
+另外，doLast动作可以简化如下形式，这也是很常见的一种写法：
 
 ```java
 task myTask << {
@@ -1951,5 +1953,793 @@ task myTask << {
 }
 ```
 
+声明任务依赖其他任务使用dependsOn("taskName")
 
+定义一个创建文件夹的task
+
+```groovy
+def createDir =  {
+    path ->
+        File file = new File(path)
+        if (!file.exists()) {
+            file.mkdirs()
+            println file.getAbsolutePath()
+        }
+}
+
+task makeMyDir {
+    def paths = ['src/test/main', 'src/test/resources', 'src/test/other']
+    doFirst {
+        paths.forEach(createDir)
+    }
+}
+```
+
+**构建生命周期**
+
+初始化、配置、执行。
+
+除动作代码之外的代码都是配置代码。一般doFirst doLast中是动作代码，依赖配置是属于配置代码，不能放在动作代码的方法体。
+
+**依赖管理**
+
+自动化依赖管理可以明确依赖版本，解决因传递依赖产生的依赖冲突。
+
+工件坐标：工件简单的可以理解为jar包，其坐标由3个属性构成：group/name/version
+
+常用仓库：仓库是用来存放jar包的地方，常见的有: mavenLocal/ mavenCenter/ jcenter
+
+还有一些自定义的maven仓库 
+
+文件仓库：不建议使用
+
+```
+repositories {
+    mavenLocal()
+    mavenCentral()
+    jcenter()
+    maven {
+        ''
+    }
+}
+```
+
+依赖传递性，A依赖B， B依赖C，那么A也依赖C
+
+![1556685593525](assets/1556685593525.png)
+
+即如果在编译时依赖的jar包，那么在运行时都会依赖，反之如果在运行时依赖的jar包，在编译时可以不用依赖。
+
+如果是源代码依赖的jar包，测试代码也会依赖。
+
+目前Gradle版本支持的依赖配置有：`implementation`、`api`、`compileOnly`、`runtimeOnly` 和 `annotationProcessor`，已经废弃的配置有：`compile`、`provided`、`apk`、`providedCompile`。此外依赖配置还可以加一些配置项，例如`AndroidTestImplementation`、`debugApi`等等。
+
+**implementation**
+
+与compile对应，**会添加依赖到编译路径，并且会将依赖打包到输出（aar或apk）**，但是**在编译时不会将依赖的实现暴露给其他module**，也就是只有在运行时其他module才能访问这个依赖中的实现。使用这个配置，可以显著**提升构建时间**，因为它可以减少重新编译的module的数量。建议，尽量使用这个依赖配置。
+
+**api**
+
+与compile对应，功能完全一样，会添加依赖到编译路径，并且会将依赖打包到输出（aar或apk），与implementation不同，这个**依赖可以传递**，其他module无论在编译时和运行时都可以访问这个依赖的实现，也就是会泄漏一些不应该不使用的实现。举个例子，A依赖B，B依赖C，如果都是使用api配置的话，A可以直接使用C中的类（编译时和运行时），而如果是使用implementation配置的话，在编译时，A是无法访问C中的类的。
+
+**compileOnly**
+
+与provided对应，Gradle把依赖加到编译路径，**编译时使用，不会打包到输出**（aar或apk）。这可以减少输出的体积，在只在编译时需要，在运行时可选的情况，很有用。
+
+**runtimeOnly**
+
+与apk对应，gradle添加依赖只打包到APK，运行时使用，但不会添加到编译路径。这个没有使用过。
+
+通过这个task可以查看工程的依赖情况：
+
+![1556686241611](assets/1556686241611.png)
+
+添加日志依赖：
+
+```
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+```
+
+解决冲突的步骤：
+
+1. 查看依赖报告， dependencies
+2. 排查传递性依赖
+3. 强制指定特定版本
+
+一般gradle会自动为我们解决版本冲突，默认策略是将冲突依赖统一使用最高版本的依赖
+
+修改默认解决策略：
+
+```
+configurations.all {
+    resolutionStrategy {
+        failOnVersionConflict()
+    }
+}
+这里我们修改默认策略，如果出现冲突就报错而不是使用最高版本
+```
+
+还可以排查传递性依赖
+
+```
+implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'{
+        exclude group: '', module:''
+}
+```
+
+强制指定一个版本：
+
+```
+configurations.all {
+    resolutionStrategy {
+        force 'org.slf4j:slf4j-api:1.7.24'
+    }
+}
+```
+
+**多项目构建**
+
+项目模块化，划分成多个module；
+
+![1556796320872](assets/1556796320872.png)
+
+![1556796415467](assets/1556796415467.png)
+
+添加对model的依赖：
+
+```
+implementation project(':model') 
+```
+
+根目录下的setting.gradle文件表现了当前工程的模块构成，根project和moduel
+
+```
+rootProject.name = 'gradle-demo'
+include 'model'
+include 'web'
+```
+
+如果需要对所有项目进行配置，则需要在root project的build.gradle 中进行设置，比如设置所有的module都使用java插件，如果子moduel没有使用java插件，则代码无法被其他模块依赖，
+
+```
+allprojects {
+    apply plugin: 'java'
+    sourceCompatibility = 1.8
+}
+```
+
+对所有项目配置依赖，使用subprojects也可以，和allprojects差不多
+
+```
+subprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        testCompile group: 'junit', name: 'junit', version: '4.12'
+        implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    }
+}
+```
+
+统一全局配置project和version,在根目录下新建一个文件：gradle.properties
+
+```
+group = 'com.zht'
+version='1.0-SNAPSHOT'
+```
+
+**自动化测试原理**
+
+自动化task会自动调用相关测试代码，当然测试代码不会发布到生产环境，
+
+![1556799209183](assets/1556799209183.png)
+
+把测试代码放到对应目录，测试工具就会执行这些代码，测试工具调用测试代码：
+
+![1556799397154](assets/1556799397154.png)
+
+
+
+**自定义jar包名**
+
+默认情况下，jar包的名字是由变量  rootProject.name + version组成，其中rootProject.name 在settings.gradle文件中。
+
+方法一：
+
+在build.gradle设置2个参数：
+
+```
+archivesBaseName = 'project1'
+version = '1.1-SNAPSHOT'
+```
+
+那么jar包的名字就是`project1-1.1-SNAPSHOT.jar`
+
+方法二：
+
+直接指定jar包名：
+
+```
+configurations {
+    jar.archiveName = 'submodule-jar.jar'
+}
+```
+
+
+
+## yml语法
+
+YAML 是专门用来写配置文件的语言，非常简洁和强大，远比 JSON 格式方便。
+
+它的基本语法规则如下。
+
+> - 大小写敏感
+> - 使用缩进表示层级关系
+> - 缩进时不允许使用Tab键，只允许使用空格。
+> - 缩进的空格数目不重要，只要相同层级的元素左侧对齐即可
+
+`#` 表示注释，从这个字符一直到行尾，都会被解析器忽略。
+
+YAML 支持的数据结构有三种。
+
+> - 对象：键值对的集合，又称为映射（mapping）/ 哈希（hashes） / 字典（dictionary）
+> - 数组：一组按次序排列的值，又称为序列（sequence） / 列表（list）
+> - 纯量（scalars）：单个的、不可再分的值
+
+
+
+**对象**的一组键值对，使用冒号结构表示。
+
+> ```javascript
+> animal: pets
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { animal: 'pets' }
+> ```
+
+**数组**
+
+一组连词线开头的行，构成一个数组。
+
+> ```javascript
+> - Cat
+> - Dog
+> - Goldfish
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> [ 'Cat', 'Dog', 'Goldfish' ]
+> ```
+
+数据结构的子成员是一个数组，则可以在该项下面缩进一个空格。
+
+> ```javascript
+> -
+>  - Cat
+>  - Dog
+>  - Goldfish
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> [ [ 'Cat', 'Dog', 'Goldfish' ] ]
+> ```
+
+数组也可以采用行内表示法。
+
+> ```javascript
+> animal: [Cat, Dog]
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { animal: [ 'Cat', 'Dog' ] }
+> ```
+
+对象和数组可以结合使用，形成复合结构。
+
+> ```javascript
+> languages:
+>  - Ruby
+>  - Perl
+>  - Python 
+> websites:
+>  YAML: yaml.org 
+>  Ruby: ruby-lang.org 
+>  Python: python.org 
+>  Perl: use.perl.org 
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { languages: [ 'Ruby', 'Perl', 'Python' ],
+>   websites: 
+>    { YAML: 'yaml.org',
+>      Ruby: 'ruby-lang.org',
+>      Python: 'python.org',
+>      Perl: 'use.perl.org' } }
+> ```
+
+**纯量**
+
+纯量是最基本的、不可再分的值。以下数据类型都属于 JavaScript 的纯量。
+
+> - 字符串
+> - 布尔值
+> - 整数
+> - 浮点数
+> - Null
+> - 时间
+> - 日期
+
+数值直接以字面量的形式表示。
+
+> ```javascript
+> number: 12.30
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { number: 12.30 }
+> ```
+
+布尔值用`true`和`false`表示。
+
+> ```javascript
+> isSet: true
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { isSet: true }
+> ```
+
+`null`用`~`表示。
+
+> ```javascript
+> parent: ~ 
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { parent: null }
+> ```
+
+时间采用 ISO8601 格式。
+
+> ```javascript
+> iso8601: 2001-12-14t21:59:43.10-05:00 
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { iso8601: new Date('2001-12-14t21:59:43.10-05:00') }
+> ```
+
+日期采用复合 iso8601 格式的年、月、日表示。
+
+> ```javascript
+> date: 1976-07-31
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { date: new Date('1976-07-31') }
+> ```
+
+YAML 允许使用两个感叹号，强制转换数据类型。
+
+> ```javascript
+> e: !!str 123
+> f: !!str true
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { e: '123', f: 'true' }
+> ```
+
+字符串是最常见，也是最复杂的一种数据类型。
+
+字符串默认不使用引号表示。
+
+> ```javascript
+> str: 这是一行字符串
+> ```
+
+转为 JavaScript 如下。
+
+> ```javascript
+> { str: '这是一行字符串' }
+> ```
+
+如果字符串之中包含空格或特殊字符，需要放在引号之中。
+
+> ```javascript
+> str: '内容： 字符串'
+> ```
+
+单引号和双引号都可以使用，双引号不会对特殊字符转义。
+
+锚点`&`和别名`*`，可以用来引用。
+
+> ```javascript
+> defaults: &defaults
+>   adapter:  postgres
+>   host:     localhost
+> 
+> development:
+>   database: myapp_development
+>   <<: *defaults
+> 
+> test:
+>   database: myapp_test
+>   <<: *defaults
+> ```
+
+等同于下面的代码。
+
+> ```javascript
+> defaults:
+>   adapter:  postgres
+>   host:     localhost
+> 
+> development:
+>   database: myapp_development
+>   adapter:  postgres
+>   host:     localhost
+> 
+> test:
+>   database: myapp_test
+>   adapter:  postgres
+>   host:     localhost
+> ```
+
+`&`用来建立锚点（`defaults`），`<<`表示合并到当前数据，`*`用来引用锚点。
+
+下面是另一个例子。
+
+> ```javascript
+> - &showell Steve 
+> - Clark 
+> - Brian 
+> - Oren 
+> - *showell 
+> ```
+
+转为 JavaScript 代码如下。
+
+> ```javascript
+> [ 'Steve', 'Clark', 'Brian', 'Oren', 'Steve' ]
+> ```
+
+**spring中配置参数 application.yml**
+
+系统默认的配置文件名称是`application.properties`，内容样式如下：
+
+```
+server.port=8080
+spring.profiles=dev
+spring.thymeleaf.cache=false
+```
+
+也可以使用`application.yml`
+
+在Spring Boot中多环境配置文件名需要满足application-{profile}.properties的格式，其中{profile}对应你的环境标识，如：
+
+```
+application-dev.properties：开发环境
+application-pro.properties：生产环境
+```
+
+这样就可以使用多状态配置。在使用时，需要在配置文件application.properties中标记激活配置`spring.profiles.active=dev`
+命令行 执行java -jar xxx.jar --spring.profiles.active=dev，就可以使用application-dev.properties中的配置。
+
+配置文件也可以写成application.yml，格式更简洁。
+如开发环境和生产环境分开配置，可以使用符号`---`，如：
+
+```
+spring:
+  profiles:
+  #激活开发环境
+    active: dev
+---
+#开发环境配置
+spring:
+  profiles: dev
+server:
+  port: 8080
+---
+#生产环境配置
+spring:
+  profiles: pro
+server:
+  port: 8082
+```
+
+注意，参数值和:之间要有空格
+
+在类中使用配置里的值，可以使用@Value注解：
+
+```java
+@value("${age}")
+private Integer age;
+```
+
+在类前注释 @ConfigurationProperties 可以直接为类的属性赋值为配置参数，‘prefix’是配置前缀
+首先增加配置参数文件application.yml：
+
+```
+user:
+	age: 20
+	sex: 1
+	nickname: jack
+```
+
+使用配置属性：
+
+```java
+@Component
+@ConfigurationProperties(prefix = "user")
+public class UserConfiguration { 
+     private String sex; 
+     private String nickname;
+     ...
+}
+```
+
+注意可以使用@PropertySource 指定配置文件路径;  但是指定的配置文件不能是 .yml文件，**必须是 .properties文件。**
+
+> The `@PropertySource` annotation doesn't support yaml files.
+
+参考：
+
+<https://www.kancloud.cn/cxr17618/springboot/435772>
+
+<https://mritd.me/2017/11/28/ci-cd-gitlab-ci/>
+
+<http://www.ruanyifeng.com/blog/2016/07/yaml.html>
+
+<https://juejin.im/post/5afd42be6fb9a07aaa11793f>
+
+
+
+## **terraform教程**
+
+Terraform 基于 Go 语言的，开源，解决软硬件（基础）资源分配／构建等问题的软件，由 HashiCorp 开发。
+
+Terraform 要**解决的就是在云上那些硬件资源分配管理的问题**。相比较 Chef, Puppet 这些软件配置工具，Terraform 提供的是软件配置之前，软硬件（基础）资源构建的问题。
+
+主要是运维人员掌握。
+
+**Installing Terraform**
+
+下载terraform安装包，解压，里面有一个可执行文件，terraform.exe，把这个文件路径添加到PATH；
+
+验证安装：
+
+控制台输入：terraform  如果没有输出错误，表示安装成功
+
+```
+terraform init
+//它要做的事情像是 git init 加上 npm install，执行完了 terraform init 之后会在当前目录中生成 .terraform 目录，并依照 *.tf 文件中的配置下载相应的插件。
+
+terraform plan
+//Terraform 在正式执行之前提供了预览执行计划的机会，让我们清楚的了解将要做什么
+
+terraform apply
+//执行脚本
+
+```
+
+实际上 `terraform apply` 也是先删除旧的，再创建新的。Terraform 像 git 一样用不同颜色和  +/- 号来显示变动操作。
+
+最后是 `terraform destroy` 命令，把 `*.tf` 文件中配置的所有资源从 AWS 上清理掉。
+
+Terraform 运行时会读取工作目录中所有的 `*.tf`, `*.tfvars` 文件，所以我们不必把所有的东西都写在单个文件中去，应按职责分列在不同的文件中，例如：
+
+> provider.tf                -- provider 配置
+> terraform.tfvars      -- 配置 provider 要用到的变量
+> varable.tf                  -- 通用变量
+> resource.tf                -- 资源定义
+> data.tf                        -- 包文件定义
+> output.tf                    -- 输出
+
+
+
+定义变量的variables.tf
+
+```
+variable "access_key" {}
+variable "secret_key" {}
+variable "region" {
+  default = "us-east-1"
+}
+```
+
+此处定义了3个变量，最后一个设置了一个默认值，前2个变量的{}是空的，那么在执行terraform plan的时候，terraform会提示你这些没有设置值的variables。
+
+使用变量： `access_key = "${var.access_key}"`
+
+**变量值设定**：
+
+1 命令行输入，在命令行中使用 -var 命令，Any command in Terraform that inspects the configuration accepts this flag, such as `apply`, `plan`, and `refresh`
+
+```
+$ terraform apply \
+  -var 'access_key=foo' \
+  -var 'secret_key=bar'
+```
+
+这些设置的变量值不会被保存，每次执行都需要输入。
+
+2 如果想保存这些变量的设定值，那么可以创建一个文件：terraform.tfvars
+
+```
+access_key = "foo"
+secret_key = "bar"
+```
+
+For all files which match `terraform.tfvars` or `*.auto.tfvars` present in the current directory, Terraform automatically loads them to populate variables.If the file is named something else, you can use the `-var-file` flag directly to specify a file. 
+
+We don't recommend saving usernames and password to version control, but you can create a local secret variables file and use `-var-file` to load it.
+
+```
+$ terraform apply \
+  -var-file="secret.tfvars" \
+  -var-file="production.tfvars"
+```
+
+3 从环境变量读取，环境变量要以 `TF_VAR_`作为开头前缀，且环境变量只能传递 字符串 类型的变量值。Terraform will read environment variables in the form of `TF_VAR_name` to find the value for a variable. For example, the `TF_VAR_access_key` variable can be set to set the `access_key` variable.
+
+4 UI Input：If you execute `terraform apply` with certain variables unspecified, Terraform will ask you to input their values interactively. These values are not saved, but this provides a convenient workflow when getting started with Terraform. UI Input is not recommended for everyday use of Terraform.UI input也是只支持string类型
+
+
+
+**output variables**
+
+ we introduce output variables as a way to organize data to be easily queried and shown back to the Terraform user.
+
+查询和显示
+
+Outputs are a way to tell Terraform what data is important. This data is outputted when `apply` is called, and can be queried using the `terraform output` command.
+
+Let's define an output to show us the public IP address of the elastic IP address that we create. Add this to any of your `*.tf` files:
+
+```
+output "ip" {
+  value = "${aws_eip.ip.public_ip}"
+}
+```
+
+Run `terraform apply` to populate the output. 
+
+```
+$ terraform apply
+...
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+  ip = 50.17.232.209
+```
+
+```
+You can also query the outputs after apply-time using terraform output:
+$ terraform output ip
+50.17.232.209
+```
+
+同时， 使用 ${terraform output ip} 也可以读取这个变量值。
+
+**data source**
+
+The `data` block creates a data instance of the given `TYPE` (first parameter) and `NAME` (second parameter). The combination of the type and name must be unique.
+
+Within the block (the `{ }`) is configuration for the data instance. The configuration is dependent on the type, and is documented for each data source in the [providers section](https://www.terraform.io/docs/providers/index.html).
+
+Each data instance will export one or more attributes, which can be interpolated into other resources using variables of the form `data.TYPE.NAME.ATTR`.
+
+Data sources can be used for a number of reasons; but their goal is to **do something** and then **give you data**.
+
+
+
+**Data sources** provide information about entities that are *not managed by the current Terraform configuration*.
+
+This may include:
+
+- Configuration data from Consul
+- Information about the state of manually-configured infrastructure components
+
+In other words, data sources are *read-only* views into the state of pre-existing components external to our configuration.
+
+Once you have defined a data source, you can use the data elsewhere in your Terraform configuration.
+
+For example, let's suppose we want to create a Terraform configuration for a new AWS EC2 instance. We want to use an AMI image which were created and uploaded by a Jenkins job using the AWS CLI, and not managed by Terraform. As part of the configuration for our Jenkins job, this AMI image will always have a name with the prefix `app-`.
+
+In this case, we can use the [`aws_ami` data source](https://www.terraform.io/docs/providers/aws/d/ami.html) to obtain information about the most recent AMI image that has the name prefix `app-`.
+
+```
+data "aws_ami" "app_ami" {
+  most_recent = true
+  filter {
+    name   = "name"
+    values = ["app-*"]
+  }
+}
+```
+
+Data sources export attributes, just like resources do. We can interpolate these attributes using the syntax `data.TYPE.NAME.ATTR`. In our example, we can interpolate the value of the AMI ID as `data.aws_ami.app_ami.id`, and pass it as the `ami` argument for our [`aws_instance` resource](https://www.terraform.io/docs/providers/aws/r/instance.html).
+
+```
+resource "aws_instance" "app" {
+  ami           = "${data.aws_ami.app_ami.id}"
+  instance_type = "t2.micro"
+}
+```
+
+Data sources are most powerful when retrieving information about *dynamic* entities - those whose properties change value often. For example, the next time Terraform fetches data for our `aws_ami`data source, the value of the exported attributes may be different (we might have built and pushed a new AMI).
+
+Variables are used for *static* values, those that rarely changes, such as your access and secret keys, or a standard list of sudoers for your servers.
+
+data source is to provide information of existing infrastructure not to create new services。
+
+
+
+**Linux tee命令**
+
+在执行Linux命令时，我们可以把输出重定向到文件中，比如 ls >a.txt，这时我们就不能看到输出了，如果我们既想把输出保存到文件中，又想在屏幕上看到输出内容，就可以使用tee命令了。tee命令读取标准输入，把这些内容同时输出到标准输出和（多个）文件中.
+
+tee file: 输出到标准输出的同时，保存到文件file中。如果文件不存在，则创建；如果已经存在，则覆盖之。
+
+tee -a file: 输出到标准输出的同时，追加到文件file中。如果文件不存在，则创建；如果已经存在，就在末尾追加内容，而不是覆盖。
+
+
+
+
+
+参考：
+
+<https://learn.hashicorp.com/terraform/getting-started/build>
+
+<https://stackoverflow.com/questions/47721602/how-are-data-sources-used-in-terraform>
+
+
+
+A `keystore` is a container of certificates, private keys etc.
+
+There are specifications of what should be the format of this keystore and the predominant is the 
+
+JKS is Java's keystore implementation. There is also BKS etc.
+
+These are all keystore **types**.
+
+jks是JAVA的keytools证书工具支持的证书私钥格式。
+pfx是微软支持的私钥格式。
+
+cer是证书的公钥。
+
+如果是你私人要备份证书的话记得一定要备份成jks或者pfx格式，否则恢复不了。
+
+简单来说，cer就是你们家邮箱的地址，你可以把这个地址给很多人让他们往里面发信。
+pfx或jks就是你家邮箱的钥匙，别人有了这个就可以冒充你去你家邮箱看信，你丢了这个也没法开邮箱了。  
+
+![1557125869453](assets/1557125869453.png)
 
