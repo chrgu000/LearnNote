@@ -138,6 +138,8 @@ ARP协议也是通过广播的形式给同一个子网中的每台电脑发送�
 
 五层模型至此讲到这里。对于有些层讲的比较简洁，就随便概况了一下。因为如果我说的详细一点的话，篇幅肯定会特别特别长，我已经是尽最大的努力以最简洁的方式来讲的了。如果你想详细去了解，可以去买计算机网络相应的资料，强烈推荐《计算机网络：自顶向下》这本书。希望我的讲解能让你对计算机之间数据的传输有个大概的了解。
 
+![1557803912334](assets/1557803912334.png)
+
 
 
 ### 字符编码笔记
@@ -347,6 +349,40 @@ dependencies {
 <https://stackoverflow.com/questions/27312491/rest-jax-rs-javax-ws-rs-processingexception/29560463#29560463>
 
 <https://blog.csdn.net/ashencode/article/details/82078308>
+
+
+
+### URI和URL区别
+
+URL（Uniform Resource Locator，统一资源定位符），使用 **Web 浏览器**等访问 Web 页面时需要输入的网页地址，比如 <https://www.google.com/> 。
+
+URI 是 Uniform Resource Identifier 的缩写，这三个单词分别表示：
+
+- Uniform，规定统一的格式可方便处理多种不同类型的资源，而不用根据上下文环境来识别资源指定的访问方式。另外，加入新增的协议方案（如 http: 或 ftp:）也更容易；
+- Resource，资源的定义是“可标识的任何东西”。除了文档文件、图像或服务（例如当天的天气预报）等能够区别于其他类型的，全都可作为资源。另外，资源不仅可以是单一的，也可以是多数的集合体；
+- Identifier，表示可标识的对象。也称为标识符；
+
+综上所述，URI 就是由**某个协议方案**表示的资源的定位标识符。协议方案是指访问资源所使用的协议类型名称。采用 HTTP 协议时，协议方案就是 http。URI 用**字符串标识某一互联网资源**，而 URL表示资源的地点（互联网上所处的位置），**可见 URL是 URI 的子集**。
+
+**URI：**Uniform Resource Identifier，统一资源标识符
+**URL：**Uniform Resource Location统一资源定位符
+
+**URI**是一个用于标识互联网资源名称的字符串。 该种标识允许用户对网络中（一般指[万维网](https://link.jianshu.com?t=https://zh.wikipedia.org/wiki/%E4%B8%87%E7%BB%B4%E7%BD%91)）的资源通过特定的[协议](https://link.jianshu.com?t=https://zh.wikipedia.org/wiki/%E5%8D%8F%E8%AE%AE)进行交互操作。URI的最常见的形式是[统一资源定位符](https://link.jianshu.com?t=https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%AE%9A%E4%BD%8D%E7%AC%A6)（URL），经常指定为非正式的网址。更罕见的用法是[统一资源名称](https://link.jianshu.com?t=https://zh.wikipedia.org/wiki/%E7%BB%9F%E4%B8%80%E8%B5%84%E6%BA%90%E5%90%8D%E7%A7%B0)（URN），其目的是通过提供一种途径。用于在特定的命名空间资源的标识，以补充网址。
+
+通俗地说，URL和URN是URI的子集，URI属于URL更高层次的抽象，一种字符串文本标准。
+
+URI是以一种抽象的，高层次概念定义统一资源标识，而URL和URN则是具体的资源标识的方式。
+
+URL代表资源的路径地址，而URI代表资源的名称。
+
+通过URL找到资源是对网络位置进行标识，如：
+
+- **http://example.org/absolute/URI/with/absolute/path/to/resource.txt**
+- **ftp://example.org/resource.txt**
+
+通过URI找到资源是通过对名称进行标识，这个名称在某命名空间中，并不代表网络地址，如：
+
+- **urn:issn:1535-3613**
 
 
 
