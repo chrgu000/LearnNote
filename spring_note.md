@@ -1860,6 +1860,13 @@ cp是classpath的缩写，后面接class文件，意思是将指定的class类�
 
 **打war包**
 
+maven打war包，在pom.xml文件添加如下代码：
+
+```xml
+<version>0.0.1-SNAPSHOT</version> 在工程的version设置附近添加如下：
+<packaging>war</packaging>
+```
+
 首先在build.gradle中添加war插件：
 
 ```
