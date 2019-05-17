@@ -1,6 +1,6 @@
 # Python学习
 
-基础学习代码
+## 基础学习代码
 
 ```python
 #!/usr/bin/env python3
@@ -195,7 +195,82 @@ path = os.getenv('java_home')
 print (path)
 ```
 
-## **切片等用法**
+##  模块
+
+Python 模块(Module)，是一个 Python 文件，以 .py 结尾，包含了 Python 对象定义和Python语句。
+
+模块让你能够有逻辑地组织你的 Python 代码段。
+
+把相关的代码分配到一个模块里能让你的代码更好用，更易懂。
+
+模块能定义函数，类和变量，模块里也能包含可执行的代码。
+
+```python
+创建模块 support.py
+def print_func( par ):
+   print "Hello : ", par
+   return
+
+
+# 导入模块
+import support
+ 
+# 现在可以调用模块里包含的函数了
+support.print_func("Runoob")
+```
+
+Python 的 from 语句让你从模块中导入一个指定的部分到当前命名空间中。例如，要导入模块 fib 的 fibonacci 函数
+
+```
+from fib import fibonacci
+```
+
+这个声明不会把整个 fib 模块导入到当前的命名空间中，它只会将 fib 里的 fibonacci 单个引入到执行这个声明的模块的全局符号表。
+
+把一个模块的所有内容全都导入到当前的命名空间也是可行的
+
+```
+from modname import *
+```
+
+当你导入一个模块，Python 解析器对模块位置的搜索顺序是：
+
+- 1、当前目录
+- 2、如果不在当前目录，Python 则搜索在 shell 变量 PYTHONPATH 下的每个目录。
+- 3、如果都找不到，Python会察看默认路径。UNIX下，默认路径一般为/usr/local/lib/python/。
+
+模块搜索路径存储在 system 模块的 sys.path 变量中。变量里包含当前目录，PYTHONPATH和由安装过程决定的默认目录。
+
+
+
+python中的包是一个分层次的文件目录结构，它定义了一个由模块及子包，和子包下的子包等组成的 Python 的应用环境。
+
+简单来说，包就是文件夹，但该文件夹下必须存在 `__init__.py` 文件, 该文件的内容可以为空。`__init__.py` 用于标识当前文件夹是一个包。
+
+考虑一个在 **package_runoob** 目录下的 **runoob1.py、runoob2.py、__init__.py** 文件，test.py 为测试调用包的代码，目录结构如下：
+
+```python
+test.py
+package_runoob
+|-- __init__.py
+|-- runoob1.py
+|-- runoob2.py
+
+#使用
+#!/usr/bin/python
+# -*- coding: UTF-8 -*-
+ 
+# 导入 Phone 包
+from package_runoob.runoob1 import runoob1
+from package_runoob.runoob2 import runoob2
+ 
+runoob1()
+runoob2()
+```
+
+
+
+## 切片等高级操作
 
 ```python
 #切片
@@ -411,9 +486,338 @@ print (int('1111', **kw))
 
 
 
+## 类的使用
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import sys
+
+def test():
+	args = sys.argv
+	if len(args) == 1:
+		print ('hello nothing')
+	elif len(args) == 2:
+		print ('hello',args[1])
+	else:
+		print ("too many thing")
+		
+
+if __name__ == '__main__':
+	test()
+	
+#当我们在命令行运行hello模块文件时，Python解释器把一个特殊变量__name__置为__main__，
+#而如果在其他地方导入该hello模块时，if判断将失败
+
+#作用域
+#正常的函数和变量名是公开的（public），可以被直接引用，比如：abc，x123，PI等；
+#类似__xxx__这样的变量是特殊变量，可以被直接引用，但是有特殊用途，比如上面的__author__，__name__就是特殊变量，
+#hello模块定义的文档注释也可以用特殊变量__doc__访问，我们自己的变量一般不要用这种变量名；
+
+#类似_xxx和__xxx这样的函数或变量就是非公开的（private），不应该被直接引用，比如_abc，__abc等；
+#因为Python并没有一种方法可以完全限制访问private函数或变量，但是，从编程习惯上不应该引用private函数或变量。
 
 
+#默认情况下，Python解释器会搜索当前目录、所有已安装的内置模块和第三方模块，搜索路径存放在sys模块的path变量中
+import sys
+print (sys.path)
+
+#如果我们要添加自己的搜索目录，有两种方法：
+
+#一是直接修改sys.path，添加要搜索的目录：
+import os
+sys.path.append('C:' + os.sep)
+print (sys.path)
+
+#第二种方法是设置环境变量PYTHONPATH，该环境变量的内容会被自动添加到模块搜索路径中。
+print ('\n\n')
+
+在Python中，定义类是通过class关键字：
+class后面紧接着是类名，即Student，类名通常是大写开头的单词，紧接着是(object)，表示该类是从哪个类继承下来的，继承的概念我们后面再讲，通常，如果没有合适的继承类，就使用object类，这是所有类最终都会继承的类。
+
+class Student(object):
+
+	def __init__(self, name, age):
+		self.name = name
+		self._age = age
+
+	def print_info(self):
+		print (self.name, self._age)
+		
+bart = Student('lester', 22)
+print(bart)
+print (Student)
+bart.print_info()
+print (bart.name)
+
+#print (bart.age) 属性的名称前加上 下划线__，在Python中，实例的变量名如果以__开头，就变成了一个私有变量（private）
+#变量名类似__xxx__的，也就是以双下划线开头，并且以双下划线结尾的，是特殊变量，特殊变量是可以直接访问的，不是private变量
+
+#由于类可以起到模板的作用，因此，可以在创建实例的时候，把一些我们认为必须绑定的属性强制填写进去。通过定义一个特殊的__init__方法，在创建实例的时候，就把name，score等属性绑上去
+
+#注意到__init__方法的第一个参数永远是self，表示创建的实例本身，因此，在__init__方法内部，就可以把各种属性绑定到self，因为self就指向创建的实例本身。
+
+#有了__init__方法，在创建实例的时候，就不能传入空的参数了，必须传入与__init__方法匹配的参数，但self不需要传，Python解释器自己会把实例变量传进去
+
+#和普通的函数相比，在类中定义的函数只有一点不同，就是第一个参数永远是实例变量self，并且，调用时，不用传递该参数。除此之外，类的方法和普通函数没有什么区别，所以，你仍然可以用默认参数、可变参数、关键字参数和命名关键字参数。
+
+类是创建实例的模板，而实例则是一个一个具体的对象，各个实例拥有的数据都互相独立，互不影响；
+和静态语言不同，Python允许对实例变量绑定任何数据，也就是说，对于两个实例变量，虽然它们都是同一个类的不同实例，但拥有的变量名称都可能不同：
+
+class Animal(object):
+	def run(self):
+		print("animal is running")
+		
+class Dog(Animal):
+	def run(selt):
+		print('dog is running')
+	
+class Cat(Animal):
+	def run(self):
+		print('cat is running')
+	
+dog = Dog()
+cat = Cat()
+dog.run()
+cat.run()
+print (isinstance(dog, Dog))
+print (isinstance(dog, Animal))
 
 
+#我们来判断对象类型，使用type()函数
+print (type(123))
+print (type('1'))
+print (type(dog))
+print (type(abs))
 
+#如果要获得一个对象的所有属性和方法，可以使用dir()函数，它返回一个包含字符串的list，比如，获得一个str对象的所有属性和方法
+print (dir (dog))
+print ('\n')
+print (dir ('a'))
+
+#果你调用len()函数试图获取一个对象的长度，实际上，在len()函数内部，它自动去调用该对象的__len__()方法
+print (hasattr(dog, 'run'))
+print (getattr(dog,'run','default'))
+
+#给实例绑定属性的方法是通过实例变量，或者通过self变量
+#但是，如果Student类本身需要绑定一个属性呢？可以直接在class中定义属性，这种属性是类属性，归Student类所有,当我们定义了一个类属性后，这个属性虽然归类所有，但类的所有实例都可以访问到。
+
+#类通过self 绑定的变量属于实例本身的属性，如果定义在类中，则属于类属性
+class Stu(object):
+	name = 'baby'
+    
+>>> class Student(object):
+...     name = 'Student'
+...
+>>> s = Student() # 创建实例s
+>>> print(s.name) # 打印name属性，因为实例并没有name属性，所以会继续查找class的name属性
+Student
+>>> print(Student.name) # 打印类的name属性
+Student
+
+
+#实例属性的优先级高于类属性	
+stu = Stu()
+s2 = Stu()
+stu.name = 'ant' # 给实例绑定name属性
+print (stu.name) # 由于实例属性优先级比类属性高，因此，它会屏蔽掉类的name属性
+print (s2.name)
+del stu.name # 如果删除实例的name属性 
+print (stu.name) #再次调用s.name，由于实例的name属性没有找到，类的name属性就显示出来了
+
+
+```
+
+## 文件操作
+
+```python
+
+#遇到有些编码不规范的文件，你可能会遇到UnicodeDecodeError，因为在文本文件中可能夹杂了一些非法编码的字符。
+#open()函数还接收一个errors参数，表示如果遇到编码错误后如何处理。最简单的方式是直接忽略：
+#Python引入了with语句来自动帮我们调用close()方法
+
+try:
+    f = open('/path/to/file', 'r')
+    print(f.read())
+finally:
+    if f:
+        f.close()
+        
+#调用read()方法可以一次读取文件的全部内容，Python把内容读到内存，用一个str对象表示
+with open(".\\Hello.py", 'r', encoding='utf-8', errors='ignore') as f:
+	print (f.read())
+	
+#如果不能确定文件大小，反复调用read(size)比较保险；如果是配置文件，调用readlines()最方便
+with open(".\\backup.py", 'r', encoding='utf-8', errors='ignore') as f:
+	for s in f.readlines():
+		print (s)
+		
+with open('.\\file.txt', 'w') as f:
+	f.write('hello, file\n')
+	f.write(str(list(range(10))))
+	
+with open('.\\file.txt', 'a') as f:
+	f.write('\n' + str([x*x for x in range(1,11)]))
+
+    #前面讲的默认都是读取文本文件，并且是UTF-8编码的文本文件。要读取二进制文件，比如图片、视频等等，用'rb'模式打开文件
+>>> f = open('/Users/michael/test.jpg', 'rb')
+>>> f.read()
+
+w+：打开一个文件用于读写。如果该文件已存在则打开文件，并从开头开始编辑，即原有内容会被删除。如果该文件不存在，创建新文件。
+a+：打开一个文件用于读写。如果该文件已存在，文件指针将会放在文件的结尾。文件打开时会是追加模式。如果该文件不存在，创建新文件用于读写。
+wb+, ab+ 对二进制文件进行读写，追加读写
+
+
+from io import StringIO
+f = StringIO()
+f.write('hi')
+f.write(' ')
+f.write('baby')
+print (f.getvalue())
+
+f = StringIO('hi\nboy')
+while True:
+	s = f.readline()
+	if s == '':
+		break
+	print (s)
+	
+from io import BytesIO
+f = BytesIO()
+f.write('中午'.encode('utf-8'))
+print (f.getvalue())
+
+f2 = BytesIO('不容易'.encode('utf-8'))
+print(f2.read(),'\n')
+
+import os
+print(os.name)
+print (os.environ)
+
+print ('\n',os.environ.get('PATH'))
+
+#查看当前目录的绝对路径:
+print (os.path.abspath('.'))
+#os.mkdir('.\\test')
+#os.rmdir('.\\test')
+#os.remove('f.txt')
+#os.rename('.\\file.txt', '.\\f.txt')
+
+fs = [x for x in os.listdir('.')]
+print (fs)
+
+
+fs = [x for x in os.listdir('C:\\')]
+print (fs)
+for f in fs:
+	print (f, os.path.isfile(f))
+
+ #序列化 Python内置的json模块提供了非常完善的Python对象到JSON格式的转换。
+import json
+d = {'a':1,'b':2,'c':3}
+j = json.dumps(d) #把Python对象变成一个JSON
+print (j)
+print (json.loads(j), isinstance(json.loads(j), dict)) #把JSON反序列化为Python对象
+#用loads()或者对应的load()方法，前者把JSON的字符串反序列化，后者从file-like Object中读取字符串并反序列化
+
+对自定义对象进行序列化和反序列化，必须实现特定方法
+import json
+
+class Student(object):
+    def __init__(self, name, age, score):
+        self.name = name
+        self.age = age
+        self.score = score
+        
+def student2dict(std):
+    return {
+        'name': std.name,
+        'age': std.age,
+        'score': std.score
+    }
+
+def dict2student(d):
+    return Student(d['name'], d['age'], d['score'])        
+    
+s = Student('Bob', 20, 88)
+
+print(json.dumps(s, default=student2dict))
+不过，下次如果遇到一个Teacher类的实例，照样无法序列化为JSON。我们可以偷个懒，把任意class的实例变为dict：
+print(json.dumps(s, default=lambda obj: obj.__dict__))
+
+#反序列化
+print(json.loads(json_str, object_hook=dict2student))
+
+#获取当前日期和时间
+from datetime import datetime 
+now = datetime.now()
+print (now)
+print (now.strftime('%Y %m %d %H:%M:%S'))
+
+#内置的base64可以直接进行base64的编解码
+import base64
+s = base64.b64encode(b'hello')
+print (s)
+print (base64.b64decode(s))
+```
+
+## 网络操作
+
+Python内置的urllib模块
+
+Python第三方库，处理URL资源特别方便
+
+pip install requests
+
+要通过GET访问一个页面
+>>> ```python
+>>> import requests
+>>> r = requests.get('https://www.douban.com/') # 豆瓣首页
+>>> r.status_code
+>>> 200
+>>> r.text
+>>> ```
+
+对于带参数的URL，传入一个dict作为params参数
+>>> ```python
+>>> r = requests.get('https://www.douban.com/search', params={'q': 'python', 'cat': '1001'})
+>>> r.url # 实际请求的URL
+>>> 'https://www.douban.com/search?q=python&cat=1001'
+>>> ```
+
+requests自动检测编码，可以使用encoding属性查看
+
+无论响应是文本还是二进制内容，我们都可以用content属性获得bytes对象
+
+要发送POST请求，只需要把`get()`方法变成`post()`，然后传入`data`参数作为POST请求的数据
+
+```
+r = requests.post('https://accounts.douban.com/login', data={'form_email': 'abc@example.com', 'form_password': '123456'})
+```
+
+requests默认使用`application/x-www-form-urlencoded`对POST数据编码。如果要传递JSON数据，可以直接传入json参数：
+
+```
+params = {'key': 'value'}
+r = requests.post(url, json=params) # 内部自动序列化为JSON
+```
+
+除了能轻松获取响应内容外，requests对获取HTTP响应的其他信息也非常简单。例如，获取响应头，获取指定的Cookie
+
+```python
+>>> r.headers
+{Content-Type': 'text/html; charset=utf-8', 'Transfer-Encoding': 'chunked', 'Content-Encoding': 'gzip', ...}
+>>> r.headers['Content-Type']
+'text/html; charset=utf-8'
+ >>> r.cookies['ts']
+'example_cookie_12345'
+ 
+#要在请求中传入Cookie，只需准备一个dict传入cookies参数：
+ >>> cs = {'token': '12345', 'status': 'working'}
+>>> r = requests.get(url, cookies=cs)
+ 
+#要指定超时，传入以秒为单位的timeout参数：
+r = requests.get(url, timeout=2.5) # 2.5秒后超时
+```
 
