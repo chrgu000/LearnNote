@@ -8,7 +8,9 @@
 
 账号：375531039@qq.com  密码：zht123456
 
+**BWH26FXH3HIQ**
 
+2xLaZgnytmtE
 
 **一道隐形的墙**
 
@@ -50,12 +52,13 @@ ssserver -p PORT -k PASSWORD -m rc4-md5 --log-file /tmp/ss.log -d start
 另一种是使用 config 文件启动，如先配置好文件（/etc/shadowcfg.json）：
 
 ```
+vim /etc/shadowcfg.json
 {
-    "server":"107.182.190.128",
+    "server":"93.179.96.93",
     "local_address":"127.0.0.1", 
     "local_port":1080, 
     "port_password":{ 
-         "443":"OGE2OWE3YW", 
+         "443":"abcd123456", 
          "6666":"abcd123456", 
          "6667":"abcd123456",
 	 	 "6668":"abcd123456"    
@@ -70,5 +73,14 @@ ssserver -p PORT -k PASSWORD -m rc4-md5 --log-file /tmp/ss.log -d start
 
 ```
 ssserver -c /etc/shadowcfg.json -d start
+
+ssserver -c /etc/shadowcfg.json --user nobody -d start
+
+ssserver -c /etc/shadowcfg.json -d stop
+
+设置开机启动
+sudo ssserver -c /etc/shadowcfg.json --user nobody -d start
+
+pip show shadowsocks
 ```
 

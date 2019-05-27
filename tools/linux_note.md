@@ -80,6 +80,10 @@ sudo的配置文件为：/etc/sudoers。
 
 sudoers文件中允许指定用户在不需要知道root用户的登陆密码的情况下，可以以root用户身份运行各种命令。此文件必须使用visudo命令编辑配置。
 
+passwd //之后会提示输入新密码 输入之后修改成功！
+
+passwd username(要更改密码的用户名)
+
 
 
 groups:查看当前用户所在的用户组。
